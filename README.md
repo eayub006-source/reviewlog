@@ -182,5 +182,3 @@ Through this project I learned:
 ## Author
 
 **Eshal Ayub**
-
-Backend Development Internship Project

@@ -1,15 +1,9 @@
-# Create your models here.
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 class Review(models.Model):
-
-    TYPE_CHOICES = [
-        ("book", "Book"),
-        ("movie", "Movie"),
-    ]
-
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -18,14 +12,19 @@ class Review(models.Model):
         blank=True,
     )
 
-    title = models.CharField(max_length=200)
-    type = models.CharField(max_length=10, choices=TYPE_CHOICES)
-    rating = models.IntegerField()
-    review = models.TextField()
+    title = models.CharField(max_length=255)
+    content = models.TextField()
+
+    rating = models.IntegerField(
+        validators=[
+            MinValueValidator(1),
+            MaxValueValidator(5),
+        ]
+    )
+
+    date = models.DateField()
 
     is_public = models.BooleanField(default=False)
 
-    date = models.DateField(auto_now_add=True)
-
     def __str__(self):
-        return f"{self.title} ({self.type})"
+        return self.title

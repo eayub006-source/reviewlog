@@ -1,2 +1,2 @@
-from .review_views import ReviewViewSet
-from .auth_views import RegisterView
+from .review_views import ReviewViewSet, PublicReviewList
+from .auth_views import RegisterView, ProfileView

@@ -47,7 +47,7 @@ A Django REST Framework backend for **ReviewLog**, a review management applicati
 
 ---
 
-# 🛠 Tech Stack
+#  Tech Stack
 
 - Python 3.x
 - Django

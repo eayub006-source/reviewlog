@@ -1,184 +1,194 @@
-# ReviewLog
+# ReviewLog Backend
 
-A Django REST Framework application for managing and reviewing books and movies. The project is being developed as part of a backend development internship to learn Django, REST APIs, database design, API testing, and full-stack integration.
-
----
-
-## Project Overview
-
-ReviewLog allows users to create, manage, update, retrieve, and delete reviews for books and movies through RESTful APIs.
-
-The project demonstrates the complete backend development workflow using Django REST Framework.
+A Django REST Framework backend for **ReviewLog**, a review management application that allows users to create, manage, and share reviews securely using JWT authentication.
 
 ---
 
-## Features
+##  Features
 
-### Week 1
-- Django project setup
-- Python virtual environment
-- SQLite database integration
-- Review model creation
-- Django Admin configuration
-- Database migrations
-- Git & GitHub setup
+### Authentication
+- User Registration
+- JWT Login Authentication
+- JWT Token Refresh
+- Protected API Endpoints
 
-### Week 2
-- Django REST Framework integration
-- ModelSerializer implementation
-- ViewSets
-- URL routing
-- Complete CRUD API
-- API testing using Django REST Framework
-- API testing using Postman
+### User Management
+- View Profile
+- Update Profile
+
+### Reviews
+- Create Reviews
+- Read Reviews
+- Update Reviews
+- Delete Reviews
+- Reviews linked to authenticated users
+- Users can only modify their own reviews
+
+### Public Reviews
+- Public/Private review visibility
+- Public reviews endpoint for everyone
+
+### Validation
+- Rating validation (1–5)
+- Serializer validation
+- Model validation
+
+### Security
+- JWT Authentication
+- Object-level permissions
+- User ownership enforcement
+
+### Backend Improvements
+- Modular project structure
+- Separate Views
+- Separate Serializers
+- Custom Permissions
+- CORS configured for frontend integration
 
 ---
 
-## Tech Stack
+#  Tech Stack
 
-- Python 3
+- Python 3.x
 - Django
 - Django REST Framework
-- SQLite
-- Git
-- GitHub
-- Postman
+- Simple JWT
+- SQLite (Development)
+- django-cors-headers
 
 ---
 
-## Database Model
-
-Review
-
-| Field | Type |
-|--------|------|
-| id | Integer |
-| title | CharField |
-| type | Book / Movie |
-| rating | Integer |
-| review | TextField |
-| date | DateField |
-
----
-
-## API Endpoints
-
-### Retrieve all reviews
-
-GET
+#  Project Structure
 
 ```
-/api/reviews/
-```
-
----
-
-### Retrieve a single review
-
-GET
-
-```
-/api/reviews/<id>/
-```
-
----
-
-### Create a review
-
-POST
-
-```
-/api/reviews/
-```
-
-Example
-
-```json
-{
-    "title": "Interstellar",
-    "type": "movie",
-    "rating": 5,
-    "review": "Amazing science fiction movie."
-}
-```
-
----
-
-### Update a review
-
-PUT
-
-```
-/api/reviews/<id>/
-```
-
----
-
-### Delete a review
-
-DELETE
-
-```
-/api/reviews/<id>/
-```
-
----
-
-## Project Structure
-
-```
-reviewlog/
+reviews/
 │
-├── reviewlog_backend/
-│   ├── settings.py
-│   ├── urls.py
-│   └── ...
+├── migrations/
+├── serializers/
+│   ├── auth_serializer.py
+│   └── review_serializer.py
 │
-├── reviews/
-│   ├── models.py
-│   ├── serializers.py
-│   ├── views.py
-│   ├── urls.py
-│   └── migrations/
+├── views/
+│   ├── auth_views.py
+│   └── review_views.py
 │
-├── manage.py
-├── requirements.txt
-└── db.sqlite3
+├── permissions.py
+├── models.py
+├── urls.py
+└── admin.py
 ```
 
 ---
 
-## Learning Outcomes
+# API Endpoints
 
-Through this project I learned:
+## Authentication
 
-- Django project architecture
-- Database modeling using ORM
-- SQLite integration
-- Database migrations
-- Django Admin
-- REST API development
-- Serializers
-- ViewSets
-- URL routing
-- CRUD operations
-- API testing using Postman
-- Version control using Git and GitHub
+| Method | Endpoint | Description |
+|---------|----------|-------------|
+| POST | `/api/register/` | Register User |
+| POST | `/api/token/` | Login |
+| POST | `/api/token/refresh/` | Refresh JWT Token |
 
 ---
 
-## Future Development
+## Profile
 
-- User Authentication
-- JWT Authentication
-- Permissions
-- Search & Filtering
+| Method | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/api/profile/` | Get Current User |
+| PATCH | `/api/profile/` | Update Profile |
+
+---
+
+## Reviews
+
+| Method | Endpoint |
+|---------|----------|
+| GET | `/api/` |
+| POST | `/api/` |
+| GET | `/api/<id>/` |
+| PUT | `/api/<id>/` |
+| PATCH | `/api/<id>/` |
+| DELETE | `/api/<id>/` |
+
+---
+
+## Public Reviews
+
+| Method | Endpoint |
+|---------|----------|
+| GET | `/api/public-reviews/` |
+
+---
+
+# Installation
+
+Clone the repository
+
+```bash
+git clone <repository-url>
+```
+
+Create virtual environment
+
+```bash
+python -m venv .venv
+```
+
+Activate virtual environment
+
+Windows
+
+```bash
+.venv\Scripts\activate
+```
+
+Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+Apply migrations
+
+```bash
+python manage.py migrate
+```
+
+Run the server
+
+```bash
+python manage.py runserver
+```
+
+---
+
+# Authentication
+
+All protected endpoints require a JWT Bearer Token.
+
+Example Header
+
+```
+Authorization: Bearer <your_access_token>
+```
+
+---
+
+# Future Improvements
+
+- React Frontend
+- Search Reviews
 - Pagination
-- React Frontend Integration
+- Categories & Tags
+- Image Uploads
 - Deployment
+- PostgreSQL Support
 
 ---
 
-## Author
+# Author
+Eshal Ayub
 
-**Eshal Ayub**
+Developed as part of an internship assignment using Django REST Framework.

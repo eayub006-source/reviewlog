@@ -190,4 +190,5 @@ Authorization: Bearer <your_access_token>
 
 # Author
 Eshal Ayub
+
 Developed as part of an internship assignment using Django REST Framework.

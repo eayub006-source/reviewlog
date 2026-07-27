@@ -10,8 +10,8 @@ class ReviewSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "title",
-            "type",
+            "content",
             "rating",
-            "review",
             "date",
+            "is_public",
         ]

@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 import { getProfile, loginUser } from "@/services/authService";
 import { clearAuthTokens, getRefreshToken, setAuthTokens } from "@/utils/authStorage";
+import { clearProfileCache } from "@/services/profileService";
 
 const AuthContext = createContext(null);
 
@@ -31,6 +32,7 @@ export function AuthProvider({ children }) {
         }
       } catch {
         clearAuthTokens();
+        clearProfileCache();
         if (mounted) {
           setCurrentUser(null);
         }
@@ -72,6 +74,7 @@ export function AuthProvider({ children }) {
   async function logout() {
     setLoading(true);
     clearAuthTokens();
+    clearProfileCache();
     setCurrentUser(null);
     setLoading(false);
   }

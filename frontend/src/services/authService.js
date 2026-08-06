@@ -1,4 +1,5 @@
 import api from "@/api/axios";
+import { getProfile } from "@/services/profileService";
 
 export const loginUser = async (credentials) => {
   const response = await api.post("token/", credentials);
@@ -10,7 +11,4 @@ export const registerUser = async (userData) => {
   return response.data;
 };
 
-export const getProfile = async () => {
-  const response = await api.get("profile/");
-  return response.data;
-};
+export { getProfile };

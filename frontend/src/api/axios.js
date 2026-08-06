@@ -3,6 +3,7 @@ import axios from "axios";
 import { API_BASE_URL } from "@/constants/api";
 import { getAccessToken, getRefreshToken, clearAuthTokens, setAuthTokens } from "@/utils/authStorage";
 import { refreshAccessToken } from "@/services/tokenService";
+import { clearProfileCache } from "@/services/profileService";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -82,6 +83,7 @@ api.interceptors.response.use(
     } catch (refreshError) {
       processQueue(refreshError, null);
       clearAuthTokens();
+      clearProfileCache();
       return Promise.reject(refreshError);
     } finally {
       isRefreshing = false;

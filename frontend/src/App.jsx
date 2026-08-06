@@ -5,6 +5,8 @@ import Register from "@/pages/auth/Register";
 import Dashboard from "@/pages/dashboard/Dashboard";
 import Profile from "@/pages/profile/Profile";
 import Reviews from "@/pages/reviews/Reviews";
+import ReviewForm from "@/pages/reviews/ReviewForm";
+import PublicReviews from "@/pages/reviews/PublicReviews";
 import Settings from "@/pages/settings/Settings";
 import AuthLayout from "@/layouts/AuthLayout";
 import DashboardLayout from "@/layouts/DashboardLayout";
@@ -26,6 +28,9 @@ function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/reviews" element={<Reviews />} />
+            <Route path="/reviews/new" element={<ReviewForm />} />
+            <Route path="/reviews/:reviewId/edit" element={<ReviewForm />} />
+            <Route path="/public-reviews" element={<PublicReviews />} />
             <Route path="/settings" element={<Settings />} />
           </Route>
         </Route>

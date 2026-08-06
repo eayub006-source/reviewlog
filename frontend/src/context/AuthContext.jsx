@@ -1,0 +1,101 @@
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
+
+import { getProfile, loginUser } from "@/services/authService";
+import { clearAuthTokens, getRefreshToken, setAuthTokens } from "@/utils/authStorage";
+
+const AuthContext = createContext(null);
+
+export function AuthProvider({ children }) {
+  const [currentUser, setCurrentUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function bootstrap() {
+      const refreshToken = getRefreshToken();
+
+      if (!refreshToken) {
+        if (mounted) {
+          setLoading(false);
+        }
+
+        return;
+      }
+
+      try {
+        const profile = await getProfile();
+
+        if (mounted) {
+          setCurrentUser(profile);
+        }
+      } catch {
+        clearAuthTokens();
+        if (mounted) {
+          setCurrentUser(null);
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    bootstrap();
+
+    function handleLogout() {
+      setCurrentUser(null);
+    }
+
+    window.addEventListener("auth:logout", handleLogout);
+
+    return () => {
+      mounted = false;
+      window.removeEventListener("auth:logout", handleLogout);
+    };
+  }, []);
+
+  async function login(credentials) {
+    setLoading(true);
+
+    try {
+      const tokens = await loginUser(credentials);
+      setAuthTokens(tokens);
+      const profile = await getProfile();
+      setCurrentUser(profile);
+      return profile;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function logout() {
+    setLoading(true);
+    clearAuthTokens();
+    setCurrentUser(null);
+    setLoading(false);
+  }
+
+  const value = useMemo(
+    () => ({
+      login,
+      logout,
+      currentUser,
+      loading,
+      isAuthenticated: Boolean(currentUser),
+    }),
+    [currentUser, loading],
+  );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+export function useAuthContext() {
+  const context = useContext(AuthContext);
+
+  if (!context) {
+    throw new Error("useAuthContext must be used within an AuthProvider");
+  }
+
+  return context;
+}

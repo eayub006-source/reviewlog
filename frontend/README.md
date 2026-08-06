@@ -1,16 +1,79 @@
-# React + Vite
+# ReviewLog Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+ReviewLog is a React + Vite frontend for the ReviewLog review management app. It connects to the deployed Django REST backend on Render and uses JWT authentication with automatic token refresh.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- React 19
+- Vite
+- React Router DOM
+- Axios
+- Tailwind CSS v4
+- shadcn/ui patterns
+- Lucide React
 
-## React Compiler
+## Authentication
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Login with username and password
+- Register with username, email, password, and confirm password
+- JWT access and refresh tokens stored in local storage
+- Automatic bearer token attachment
+- Automatic token refresh and retry on 401 responses
+- Auto logout when refresh fails
 
-## Expanding the Oxlint configuration
+## Backend
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+The frontend uses only this deployed backend:
+
+`https://reviewlog.onrender.com/api/`
+
+## Folder Structure
+
+```text
+src/
+	api/
+	components/
+	context/
+	hooks/
+	layouts/
+	pages/
+	routes/
+	services/
+	styles/
+	utils/
+```
+
+## Key Routes
+
+- `/login`
+- `/register`
+- `/dashboard`
+- `/profile`
+- `/reviews`
+- `/settings`
+
+## Development
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Run the app:
+
+```bash
+npm run dev
+```
+
+Build for production:
+
+```bash
+npm run build
+```
+
+## Notes
+
+- The app never uses localhost for API requests.
+- Authenticated pages are wrapped with protected routing.
+- The dashboard loads the current profile from `/api/profile/`.

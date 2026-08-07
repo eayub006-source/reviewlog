@@ -17,6 +17,23 @@ from django.core.exceptions import ImproperlyConfigured
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+def load_local_environment():
+    """Load a local, git-ignored .env file without adding a runtime dependency."""
+    environment_file = BASE_DIR / ".env"
+    if not environment_file.exists():
+        return
+
+    for raw_line in environment_file.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        name, value = line.split("=", 1)
+        os.environ.setdefault(name.strip(), value.strip().strip('"').strip("'"))
+
+
+load_local_environment()
+
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 

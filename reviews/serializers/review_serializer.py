@@ -14,4 +14,9 @@ class ReviewSerializer(serializers.ModelSerializer):
             "rating",
             "date",
             "is_public",
+            "item_type",
+            "item_id",
+            "external_source",
+            "image",
+            "metadata",
         ]

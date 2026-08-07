@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { LoaderCircle, Save } from "lucide-react";
 
 import Badge from "@/components/common/Badge";
@@ -24,6 +24,7 @@ const INITIAL_FORM = {
 function ReviewForm() {
   const navigate = useNavigate();
   const params = useParams();
+  const [searchParams] = useSearchParams();
   const reviewId = params.reviewId;
   const isEditMode = Boolean(reviewId);
   const { getReviewById, createReview, updateReview } = useReviews({ scope: "mine", enabled: false });
@@ -32,6 +33,9 @@ function ReviewForm() {
   const [loading, setLoading] = useState(isEditMode);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const externalItem = useMemo(() => {
+    try { return JSON.parse(searchParams.get("item") || "null"); } catch { return null; }
+  }, [searchParams]);
 
   const contentCount = form.content.length;
   const titleCount = form.title.length;
@@ -72,6 +76,12 @@ function ReviewForm() {
       mounted = false;
     };
   }, [getReviewById, isEditMode, reviewId]);
+
+  useEffect(() => {
+    if (!isEditMode && externalItem) {
+      setForm((current) => ({ ...current, title: externalItem.title || current.title }));
+    }
+  }, [externalItem, isEditMode]);
 
   const validation = useMemo(() => {
     const next = {};
@@ -116,6 +126,11 @@ function ReviewForm() {
       rating: Number(form.rating),
       is_public: form.is_public,
       date: new Date().toISOString().slice(0, 10),
+      item_type: externalItem?.type ?? "internal_review",
+      item_id: externalItem?.id ?? "",
+      external_source: externalItem?.source ?? "",
+      image: externalItem?.image ?? "",
+      metadata: externalItem?.metadata ?? {},
     };
 
     try {
@@ -149,7 +164,7 @@ function ReviewForm() {
   return (
     <DashboardCard
       title={isEditMode ? "Edit Review" : "Create Review"}
-      description="Save a new review or update an existing one using the deployed API."
+      description={externalItem ? `Writing a review for ${externalItem.title}.` : "Save a new review or update an existing one using the deployed API."}
     >
       <form className="space-y-6" onSubmit={handleSubmit} noValidate>
         <div className="space-y-2">

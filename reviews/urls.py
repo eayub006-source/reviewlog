@@ -5,6 +5,10 @@ from .views import (
     RegisterView,
     PublicReviewList,
     ProfileView,
+    CatalogSearchView,
+    CatalogItemListCreateView,
+    CatalogItemDeleteView,
+    DashboardStatsView,
 )
 
 router = DefaultRouter()
@@ -14,5 +18,11 @@ urlpatterns = [
     path("register/", RegisterView.as_view(), name="register"),
     path("profile/", ProfileView.as_view(), name="profile"),
     path("public-reviews/", PublicReviewList.as_view(), name="public-reviews"),
+    path("catalog/books/", CatalogSearchView.as_view(), {"item_type": "books"}, name="book-search"),
+    path("catalog/movies/", CatalogSearchView.as_view(), {"item_type": "movies"}, name="movie-search"),
+    path("favorites/", CatalogItemListCreateView.as_view(), {"action": "favorite"}, name="favorites"),
+    path("favorites/<int:pk>/", CatalogItemDeleteView.as_view(), name="favorite-delete"),
+    path("recent-items/", CatalogItemListCreateView.as_view(), {"action": "recent"}, name="recent-items"),
+    path("dashboard/stats/", DashboardStatsView.as_view(), name="dashboard-stats"),
     path("", include(router.urls)),
 ]

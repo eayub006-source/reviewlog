@@ -1,4 +1,4 @@
-import { ArrowRight, BookOpen, Globe2, PlusCircle, User, Mail, BarChart3 } from "lucide-react";
+import { ArrowRight, BookOpen, Globe2, PlusCircle, User, BarChart3, Film, Heart } from "lucide-react";
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -10,23 +10,27 @@ import { DashboardSkeleton } from "@/components/common/Skeleton";
 import { Button } from "@/components/ui/button";
 import { useProfile } from "@/hooks/useProfile";
 import { useReviews } from "@/hooks/useReviews";
+import { getFavorites, getRecentItems } from "@/services/favoriteService";
+import { useEffect, useState } from "react";
 
 function Dashboard() {
   const navigate = useNavigate();
   const { profile } = useProfile();
   const { reviews, loading } = useReviews({ scope: "mine" });
+  const [catalog, setCatalog] = useState({ favorites: 0, recent: [] });
+  useEffect(() => { Promise.all([getFavorites(), getRecentItems()]).then(([favorites, recent]) => setCatalog({ favorites: favorites.length, recent: recent.slice(0, 4) })).catch(() => undefined); }, []);
 
   const stats = useMemo(() => {
     const totalReviews = reviews.length;
     const publicReviews = reviews.filter((review) => review.is_public).length;
-    const privateReviews = reviews.filter((review) => !review.is_public).length;
-    const averageRating = totalReviews > 0 ? (reviews.reduce((sum, review) => sum + Number(review.rating || 0), 0) / totalReviews).toFixed(1) : "0.0";
+    const booksReviewed = reviews.filter((review) => review.item_type === "book").length;
+    const moviesReviewed = reviews.filter((review) => review.item_type === "movie").length;
 
     return {
       totalReviews,
       publicReviews,
-      privateReviews,
-      averageRating,
+      booksReviewed,
+      moviesReviewed,
     };
   }, [reviews]);
 
@@ -39,11 +43,12 @@ function Dashboard() {
   return (
     <div className="space-y-6">
       <DashboardCard title={`Welcome, ${profile?.username ?? "Reviewer"}`} description="Your ReviewLog dashboard overview.">
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <StatsCard title="Total Reviews" value={stats.totalReviews} icon={BookOpen} />
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+          <StatsCard title="Reviews Created" value={stats.totalReviews} icon={BookOpen} />
+          <StatsCard title="Books Reviewed" value={stats.booksReviewed} icon={BookOpen} tone="accent" />
+          <StatsCard title="Movies Reviewed" value={stats.moviesReviewed} icon={Film} tone="subtle" />
+          <StatsCard title="Favorites" value={catalog.favorites} icon={Heart} />
           <StatsCard title="Public Reviews" value={stats.publicReviews} icon={Globe2} tone="accent" />
-          <StatsCard title="Private Reviews" value={stats.privateReviews} icon={User} tone="subtle" />
-          <StatsCard title="Average Rating" value={stats.averageRating} icon={BarChart3} />
         </div>
       </DashboardCard>
 
@@ -53,6 +58,8 @@ function Dashboard() {
             {[
               { title: "Create Review", description: "Start a new review entry.", icon: PlusCircle, action: () => navigate("/reviews/new") },
               { title: "My Reviews", description: "Review and manage your entries.", icon: BookOpen, action: () => navigate("/reviews") },
+              { title: "Find Books", description: "Search Open Library.", icon: BookOpen, action: () => navigate("/books") },
+              { title: "Find Movies", description: "Search TMDB.", icon: Film, action: () => navigate("/movies") },
               { title: "Public Reviews", description: "Browse published content.", icon: Globe2, action: () => navigate("/public-reviews") },
               { title: "Profile", description: "Inspect your account details.", icon: User, action: () => navigate("/profile") },
             ].map((item) => (
@@ -114,6 +121,8 @@ function Dashboard() {
           </div>
         )}
       </DashboardCard>
+
+      {catalog.recent.length ? <DashboardCard title="Recently Viewed" description="External items you opened most recently."><div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{catalog.recent.map((item) => <button key={item.id} type="button" onClick={() => navigate(`/reviews/new?item=${encodeURIComponent(JSON.stringify({ type: item.item_type, id: item.item_id, source: item.external_source, title: item.title, image: item.image, metadata: item.metadata }))}`)} className="flex gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3 text-left hover:bg-white"><div className="h-12 w-9 overflow-hidden rounded bg-slate-200">{item.image ? <img src={item.image} alt="" className="h-full w-full object-cover" /> : null}</div><div className="min-w-0"><p className="truncate text-sm font-semibold">{item.title}</p><p className="text-xs text-slate-500">{item.item_type}</p></div></button>)}</div></DashboardCard> : null}
     </div>
   );
 }

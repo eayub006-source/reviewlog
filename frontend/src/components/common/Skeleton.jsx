@@ -134,4 +134,22 @@ export function FormSkeleton() {
   );
 }
 
+export function SearchResultsSkeleton({ count = 6 }) {
+  return (
+    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      {Array.from({ length: count }).map((_, index) => (
+        <div key={index} className="surface-card flex gap-4 p-4">
+          <Skeleton className="h-28 w-20 shrink-0 rounded-2xl" />
+          <div className="flex-1 space-y-2">
+            <Skeleton className="h-5 w-3/4" />
+            <Skeleton className="h-4 w-1/2" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-2/3" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default Skeleton;

@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, NotebookText, Globe2, User, Settings, LogOut, X } from "lucide-react";
+import { LayoutDashboard, NotebookText, Globe2, User, Settings, LogOut, X, BookOpen, Film, Heart } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import Avatar from "@/components/ui/avatar";
@@ -8,6 +8,9 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/reviews", label: "My Reviews", icon: NotebookText },
+  { to: "/books", label: "Find Books", icon: BookOpen },
+  { to: "/movies", label: "Find Movies", icon: Film },
+  { to: "/favorites", label: "Favorites", icon: Heart },
   { to: "/public-reviews", label: "Public Reviews", icon: Globe2 },
   { to: "/profile", label: "Profile", icon: User },
   { to: "/settings", label: "Settings", icon: Settings },

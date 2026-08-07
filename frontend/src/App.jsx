@@ -14,6 +14,9 @@ const Reviews = lazy(() => import("@/pages/reviews/Reviews"));
 const ReviewForm = lazy(() => import("@/pages/reviews/ReviewForm"));
 const PublicReviews = lazy(() => import("@/pages/reviews/PublicReviews"));
 const Settings = lazy(() => import("@/pages/settings/Settings"));
+const BookSearchPage = lazy(() => import("@/pages/books/BookSearchPage"));
+const MovieSearchPage = lazy(() => import("@/pages/movies/MovieSearchPage"));
+const Favorites = lazy(() => import("@/pages/favorites/Favorites"));
 const NotFound = lazy(() => import("@/pages/errors/NotFound"));
 const Unauthorized = lazy(() => import("@/pages/errors/Unauthorized"));
 const Forbidden = lazy(() => import("@/pages/errors/Forbidden"));
@@ -38,6 +41,9 @@ function App() {
               <Route path="/reviews" element={<Reviews />} />
               <Route path="/reviews/new" element={<ReviewForm />} />
               <Route path="/reviews/:reviewId/edit" element={<ReviewForm />} />
+              <Route path="/books" element={<BookSearchPage />} />
+              <Route path="/movies" element={<MovieSearchPage />} />
+              <Route path="/favorites" element={<Favorites />} />
               <Route path="/public-reviews" element={<PublicReviews />} />
               <Route path="/settings" element={<Settings />} />
             </Route>

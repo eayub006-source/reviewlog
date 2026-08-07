@@ -23,6 +23,13 @@ A Django REST Framework backend for **ReviewLog**, a review management applicati
 - Delete Reviews
 - Reviews linked to authenticated users
 - Users can only modify their own reviews
+- Review internal entries, Open Library books, and TMDB movies through one shared review model
+
+### External Catalogs
+- Authenticated book search through Open Library
+- Authenticated movie search through a server-side TMDB proxy (`TMDB_API_KEY` never reaches the frontend)
+- Paged search, debouncing, cancellation, cached provider results, empty/loading states, and search history
+- Favorites and recently viewed books/movies per user
 
 ### Public Reviews
 - Public/Private review visibility
@@ -120,6 +127,17 @@ reviews/
 |---------|----------|
 | GET | `/api/public-reviews/` |
 
+## External catalog endpoints
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/catalog/books/?q=<query>&page=1` | Search Open Library books |
+| GET | `/api/catalog/movies/?q=<query>&page=1` | Search TMDB movies |
+| GET/POST | `/api/favorites/` | List or save favorites |
+| DELETE | `/api/favorites/<id>/` | Remove a favorite |
+| GET/POST | `/api/recent-items/` | List or record recently viewed items |
+| GET | `/api/dashboard/stats/` | Review and favorite dashboard totals |
+
 ---
 
 # Installation
@@ -161,6 +179,8 @@ Run the server
 ```bash
 python manage.py runserver
 ```
+
+For movie search, set `TMDB_API_KEY` in the backend environment (for example, your Render environment variables). Do not use `VITE_TMDB_API_KEY`.
 
 ---
 

@@ -1,1 +1,2 @@
 from .review_serializer import ReviewSerializer
+from .catalog_serializer import CatalogItemSerializer

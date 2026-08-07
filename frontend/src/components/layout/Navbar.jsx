@@ -1,11 +1,12 @@
 import { Bell, Menu, LogOut, UserRound } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 import SearchBar from "@/components/common/SearchBar";
 import DropdownMenu from "@/components/common/DropdownMenu";
 import Avatar from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { getSearchHistory, saveSearchHistory } from "@/services/searchService";
 
 function Navbar({ onMenuToggle, currentUser, onLogout }) {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -14,6 +15,8 @@ function Navbar({ onMenuToggle, currentUser, onLogout }) {
 
   const searchValue = searchParams.get("q") ?? "";
   const canSearch = useMemo(() => ["/reviews", "/public-reviews"].includes(location.pathname), [location.pathname]);
+  const [globalQuery, setGlobalQuery] = useState("");
+  const [suggestions, setSuggestions] = useState(() => getSearchHistory());
 
   function handleSearchChange(event) {
     if (!canSearch) {
@@ -31,6 +34,11 @@ function Navbar({ onMenuToggle, currentUser, onLogout }) {
 
     nextParams.set("page", "1");
     setSearchParams(nextParams, { replace: true });
+  }
+  function submitGlobalSearch(event) {
+    if (event.key !== "Enter" || !globalQuery.trim()) return;
+    saveSearchHistory(globalQuery); setSuggestions(getSearchHistory());
+    navigate(`/books?q=${encodeURIComponent(globalQuery.trim())}`);
   }
 
   return (
@@ -57,11 +65,7 @@ function Navbar({ onMenuToggle, currentUser, onLogout }) {
         </div>
 
         <div className="ml-auto hidden w-full max-w-xl lg:block">
-          <SearchBar
-            value={searchValue}
-            onChange={handleSearchChange}
-            placeholder={canSearch ? "Search reviews" : "Search is available on review pages"}
-          />
+          {canSearch ? <SearchBar value={searchValue} onChange={handleSearchChange} placeholder="Search reviews" /> : <div className="relative"><SearchBar value={globalQuery} onChange={(event) => setGlobalQuery(event.target.value)} onKeyDown={submitGlobalSearch} placeholder="Search books (Enter)" ariaLabel="Global catalog search" />{globalQuery ? <div className="absolute top-12 z-50 flex w-full gap-2 rounded-2xl border bg-white p-2 text-xs shadow-lg"><Button size="sm" onClick={() => { saveSearchHistory(globalQuery); navigate(`/books?q=${encodeURIComponent(globalQuery)}`); }}>Books</Button><Button size="sm" variant="outline" onClick={() => { saveSearchHistory(globalQuery); navigate(`/movies?q=${encodeURIComponent(globalQuery)}`); }}>Movies</Button></div> : suggestions.length ? <div className="absolute top-12 z-50 w-full rounded-2xl border bg-white p-2 shadow-lg">{suggestions.slice(0, 4).map((term) => <button key={term} className="block w-full rounded-xl px-3 py-2 text-left text-sm hover:bg-slate-50" onClick={() => { setGlobalQuery(term); navigate(`/books?q=${encodeURIComponent(term)}`); }}>{term}</button>)}</div> : null}</div>}
         </div>
 
         <div className="flex items-center gap-3">

@@ -9,11 +9,13 @@ import Loader from "@/components/common/Loader";
 import Pagination from "@/components/common/Pagination";
 import ReviewCard from "@/components/common/ReviewCard";
 import SearchBar from "@/components/common/SearchBar";
-import Toast from "@/components/common/Toast";
+import { ReviewListSkeleton } from "@/components/common/Skeleton";
 import { Button } from "@/components/ui/button";
 import DashboardCard from "@/components/common/DashboardCard";
 import { useReviews } from "@/hooks/useReviews";
+import { useToast } from "@/hooks/useToast";
 import { getFriendlyApiError } from "@/utils/apiErrors";
+import { Select } from "@/components/ui/select";
 
 const PAGE_SIZE = 6;
 
@@ -22,9 +24,9 @@ function Reviews() {
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const { reviews, loading, error, deleteReview, refreshReviews } = useReviews({ scope: "mine" });
+  const { showToast } = useToast();
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [actionError, setActionError] = useState("");
-  const [toast, setToast] = useState(null);
 
   const query = searchParams.get("q") ?? "";
   const visibility = searchParams.get("visibility") ?? "all";
@@ -72,11 +74,10 @@ function Reviews() {
 
   useEffect(() => {
     if (location.state?.toast) {
-      setToast(location.state.toast);
-      window.setTimeout(() => setToast(null), 3000);
+      showToast(location.state.toast);
       navigate(location.pathname + location.search, { replace: true, state: {} });
     }
-  }, [location.pathname, location.search, location.state, navigate]);
+  }, [location.pathname, location.search, location.state, navigate, showToast]);
 
   const handleParams = useCallback(
     (updates) => {
@@ -108,31 +109,27 @@ function Reviews() {
       await deleteReview(deleteTarget.id);
       setDeleteTarget(null);
       await refreshReviews();
-      setToast({
+      showToast({
         tone: "success",
         title: "Review deleted",
         description: "The selected review was removed successfully.",
       });
-      window.setTimeout(() => setToast(null), 3000);
     } catch (caughtError) {
       setActionError(getFriendlyApiError(caughtError));
+      showToast({
+        tone: "error",
+        title: "Delete failed",
+        description: getFriendlyApiError(caughtError),
+      });
     }
-  }, [deleteReview, deleteTarget, refreshReviews]);
+  }, [deleteReview, deleteTarget, refreshReviews, showToast]);
 
   if (loading) {
-    return <Loader label="Loading your reviews..." className="min-h-[40vh]" />;
+    return <ReviewListSkeleton />;
   }
 
   return (
     <div className="space-y-6">
-      <Toast
-        open={Boolean(toast)}
-        tone={toast?.tone ?? "success"}
-        title={toast?.title ?? ""}
-        description={toast?.description ?? ""}
-        onClose={() => setToast(null)}
-      />
-
       <DashboardCard title="My Reviews" description="Search, filter, sort, and manage your private review entries.">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <SearchBar value={query} onChange={(event) => handleParams({ q: event.target.value, page: 1 })} className="w-full lg:max-w-md" />
@@ -152,16 +149,15 @@ function Reviews() {
                 {item.label}
               </Button>
             ))}
-            <select
+            <Select
               value={sort}
               onChange={(event) => handleParams({ sort: event.target.value, page: 1 })}
-              className="h-9 rounded-full border border-slate-200 bg-white px-4 text-sm text-slate-700 shadow-sm outline-none focus:border-slate-400"
             >
               <option value="newest">Newest</option>
               <option value="oldest">Oldest</option>
               <option value="highest">Highest Rating</option>
               <option value="lowest">Lowest Rating</option>
-            </select>
+            </Select>
             <Button className="h-9 rounded-full px-4" onClick={() => navigate("/reviews/new") }>
               <PlusCircle className="h-4 w-4" />
               Create Review

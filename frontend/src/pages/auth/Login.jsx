@@ -8,10 +8,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/useToast";
+import { getFriendlyApiError } from "@/utils/apiErrors";
 
 function Login() {
   const navigate = useNavigate();
   const { login, isAuthenticated, loading: authLoading } = useAuth();
+  const { showToast } = useToast();
 
   const [formData, setFormData] = useState({
     username: "",
@@ -19,7 +22,6 @@ function Login() {
   });
   const [errors, setErrors] = useState({});
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [manualSubmit, setManualSubmit] = useState(false);
 
@@ -54,10 +56,14 @@ function Login() {
     const validationErrors = validate();
     setErrors(validationErrors);
     setError("");
-    setSuccess("");
     setManualSubmit(true);
 
     if (Object.keys(validationErrors).length > 0) {
+      showToast({
+        tone: "error",
+        title: "Validation error",
+        description: "Please enter both username and password.",
+      });
       setManualSubmit(false);
       return;
     }
@@ -66,18 +72,25 @@ function Login() {
 
     try {
       await login(formData);
-      setSuccess("Login successful. Redirecting to your dashboard...");
+      showToast({
+        tone: "success",
+        title: "Login successful",
+        description: "Welcome back to ReviewLog.",
+      });
       setTimeout(() => {
         navigate("/dashboard", { replace: true });
       }, 600);
-    } catch (error) {
-      if (error.response?.status === 401) {
-        setError("Invalid username or password.");
-      } else if (error.response?.data?.detail) {
-        setError(error.response.data.detail);
-      } else {
-        setError("Unable to sign in right now. Please try again.");
-      }
+    } catch (caughtError) {
+      const message = caughtError.response?.status === 401
+        ? "Invalid username or password."
+        : getFriendlyApiError(caughtError);
+
+      setError(message);
+      showToast({
+        tone: "error",
+        title: "Login failed",
+        description: message,
+      });
       setManualSubmit(false);
     } finally {
       setSubmitting(false);
@@ -136,13 +149,6 @@ function Login() {
             <Alert variant="destructive">
               <AlertTitle>Authentication failed</AlertTitle>
               <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          ) : null}
-
-          {success ? (
-            <Alert>
-              <AlertTitle>Success</AlertTitle>
-              <AlertDescription>{success}</AlertDescription>
             </Alert>
           ) : null}
 

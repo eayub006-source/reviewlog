@@ -11,7 +11,7 @@ const StatsCard = memo(function StatsCard({ title, value, icon: Icon, hint, tone
   };
 
   return (
-    <Card className={cn("overflow-hidden border-slate-200", className)}>
+    <Card className={cn("overflow-hidden border-slate-200 surface-panel", className)}>
       <CardContent className={cn("relative flex items-start justify-between gap-4 bg-gradient-to-br p-5", toneClasses[tone] ?? toneClasses.default)}>
         <div>
           <p className="text-sm/6 font-medium opacity-80">{title}</p>

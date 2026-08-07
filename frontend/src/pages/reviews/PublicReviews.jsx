@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 
 import DashboardCard from "@/components/common/DashboardCard";
 import EmptyState from "@/components/common/EmptyState";
-import Loader from "@/components/common/Loader";
+import { ReviewListSkeleton } from "@/components/common/Skeleton";
 import Pagination from "@/components/common/Pagination";
 import ReviewCard from "@/components/common/ReviewCard";
 import SearchBar from "@/components/common/SearchBar";
@@ -41,7 +41,7 @@ function PublicReviews() {
   }
 
   if (loading) {
-    return <Loader label="Loading public reviews..." className="min-h-[40vh]" />;
+    return <ReviewListSkeleton />;
   }
 
   return (

@@ -2,6 +2,7 @@ import { NavLink } from "react-router-dom";
 import { LayoutDashboard, NotebookText, Globe2, User, Settings, LogOut, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import Avatar from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -28,9 +29,14 @@ function Sidebar({ open = false, onClose, onLogout, currentUser }) {
       </div>
 
       <div className="mt-4 rounded-3xl bg-slate-950 px-4 py-5 text-white shadow-lg lg:mt-0">
-        <p className="text-sm/6 text-slate-300">Signed in as</p>
-        <p className="mt-1 text-lg font-semibold">{currentUser?.username ?? "Account"}</p>
-        <p className="mt-1 text-sm text-slate-300">{currentUser?.email ?? "Connected to Render API"}</p>
+        <div className="flex items-center gap-3">
+          <Avatar name={currentUser?.username ?? "Account"} size="md" className="bg-white text-slate-950" />
+          <div>
+            <p className="text-sm/6 text-slate-300">Signed in as</p>
+            <p className="mt-1 text-lg font-semibold">{currentUser?.username ?? "Account"}</p>
+          </div>
+        </div>
+        <p className="mt-3 text-sm text-slate-300">{currentUser?.email ?? "Connected to Render API"}</p>
       </div>
 
       <nav className="mt-6 space-y-1">
@@ -41,7 +47,7 @@ function Sidebar({ open = false, onClose, onLogout, currentUser }) {
             onClick={onClose}
             className={({ isActive }) =>
               cn(
-                "flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-colors",
+                "flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-200",
                 isActive ? "bg-slate-950 text-white shadow-lg shadow-slate-950/10" : "text-slate-600 hover:bg-slate-100 hover:text-slate-950",
               )
             }
@@ -53,7 +59,7 @@ function Sidebar({ open = false, onClose, onLogout, currentUser }) {
       </nav>
 
       <div className="mt-6 border-t border-slate-200 pt-5">
-        <Button variant="outline" className="h-11 w-full justify-start rounded-2xl px-4" onClick={onLogout}>
+        <Button variant="outline" className="h-11 w-full justify-start rounded-2xl px-4" onClick={onLogout} aria-label="Log out">
           <LogOut className="h-4 w-4" />
           Logout
         </Button>

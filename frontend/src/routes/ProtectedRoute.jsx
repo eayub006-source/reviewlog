@@ -1,5 +1,6 @@
 import { Navigate, Outlet } from "react-router-dom";
 
+import Loader from "@/components/common/Loader";
 import { useAuth } from "@/hooks/useAuth";
 
 function ProtectedRoute({ children }) {
@@ -7,8 +8,8 @@ function ProtectedRoute({ children }) {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50 text-slate-600">
-        Checking your session...
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 text-slate-600" role="status" aria-live="polite">
+        <Loader label="Checking your session..." />
       </div>
     );
   }

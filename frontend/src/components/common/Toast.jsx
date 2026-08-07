@@ -2,7 +2,7 @@ import { CheckCircle2, AlertCircle, Info } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-function Toast({ open, title, description, tone = "success", onClose }) {
+function Toast({ open, title, description, tone = "success", onClose, inline = false }) {
   if (!open) {
     return null;
   }
@@ -16,8 +16,8 @@ function Toast({ open, title, description, tone = "success", onClose }) {
   const Icon = tone === "error" ? AlertCircle : tone === "info" ? Info : CheckCircle2;
 
   return (
-    <div className="pointer-events-none fixed right-4 top-4 z-50 w-[min(92vw,22rem)] animate-[fade-in_150ms_ease-out]">
-      <div className={cn("pointer-events-auto flex gap-3 rounded-3xl border px-4 py-3 shadow-2xl backdrop-blur", toneClasses[tone] ?? toneClasses.success)}>
+    <div className={cn(inline ? "pointer-events-auto w-full animate-[fade-in_150ms_ease-out]" : "pointer-events-none fixed right-4 top-4 z-50 w-[min(92vw,22rem)] animate-[fade-in_150ms_ease-out]")} aria-live="polite">
+      <div className={cn("pointer-events-auto flex gap-3 rounded-3xl border px-4 py-3 shadow-2xl backdrop-blur", toneClasses[tone] ?? toneClasses.success)} role="status">
         <div className="mt-0.5 rounded-2xl bg-white/70 p-2">
           <Icon className="h-4 w-4" />
         </div>

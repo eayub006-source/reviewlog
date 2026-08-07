@@ -4,14 +4,21 @@ import { useState } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Sidebar from "@/components/layout/Sidebar";
 import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/useToast";
 
 function DashboardLayout() {
   const navigate = useNavigate();
   const { currentUser, logout } = useAuth();
+  const { showToast } = useToast();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   async function handleLogout() {
     await logout();
+    showToast({
+      tone: "info",
+      title: "Logged out",
+      description: "Your session has been closed securely.",
+    });
     navigate("/login", { replace: true });
   }
 

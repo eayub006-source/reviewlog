@@ -4,11 +4,12 @@ import { LoaderCircle, Save } from "lucide-react";
 
 import Badge from "@/components/common/Badge";
 import DashboardCard from "@/components/common/DashboardCard";
-import Loader from "@/components/common/Loader";
+import { FormSkeleton } from "@/components/common/Skeleton";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useReviews } from "@/hooks/useReviews";
 import { getFriendlyApiError } from "@/utils/apiErrors";
@@ -142,7 +143,7 @@ function ReviewForm() {
   }
 
   if (loading) {
-    return <Loader label={isEditMode ? "Loading review..." : "Preparing form..."} className="min-h-[50vh]" />;
+    return <FormSkeleton />;
   }
 
   return (
@@ -172,19 +173,18 @@ function ReviewForm() {
         <div className="grid gap-4 md:grid-cols-[1fr_1fr]">
           <div className="space-y-2">
             <Label htmlFor="rating">Rating</Label>
-            <select
+            <Select
               id="rating"
               name="rating"
               value={form.rating}
               onChange={handleChange}
-              className="flex h-11 w-full rounded-2xl border border-input bg-background px-4 py-2 text-sm shadow-sm transition-colors focus-visible:border-ring focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/20"
             >
               {[5, 4, 3, 2, 1].map((value) => (
                 <option key={value} value={value}>
                   {value} Stars
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
 
           <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">

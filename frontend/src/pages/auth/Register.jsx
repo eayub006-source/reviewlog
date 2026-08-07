@@ -8,11 +8,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/useToast";
 import { registerUser } from "@/services/authService";
+import { getFriendlyApiError } from "@/utils/apiErrors";
 
 function Register() {
   const navigate = useNavigate();
   const { isAuthenticated, loading: authLoading } = useAuth();
+  const { showToast } = useToast();
 
   const [formData, setFormData] = useState({
     username: "",
@@ -71,6 +74,11 @@ function Register() {
     setSuccess("");
 
     if (Object.keys(validationErrors).length > 0) {
+      showToast({
+        tone: "error",
+        title: "Validation error",
+        description: "Please review the highlighted registration fields.",
+      });
       return;
     }
 
@@ -85,17 +93,22 @@ function Register() {
       });
 
       setSuccess("Registration successful. Redirecting to login...");
+      showToast({
+        tone: "success",
+        title: "Registration successful",
+        description: "You can now sign in with your credentials.",
+      });
       setTimeout(() => {
         navigate("/login", { replace: true });
       }, 800);
-    } catch (error) {
-      if (error.response?.data) {
-        const response = error.response.data;
-        const message = response.detail || response.password || response.username || response.email;
-        setError(Array.isArray(message) ? message[0] : message || "Unable to register right now.");
-      } else {
-        setError("Unable to register right now. Please try again.");
-      }
+    } catch (caughtError) {
+      const message = getFriendlyApiError(caughtError);
+      setError(message);
+      showToast({
+        tone: "error",
+        title: "Registration failed",
+        description: message,
+      });
     } finally {
       setSubmitting(false);
     }

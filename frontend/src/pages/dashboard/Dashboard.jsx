@@ -6,6 +6,7 @@ import DashboardCard from "@/components/common/DashboardCard";
 import EmptyState from "@/components/common/EmptyState";
 import ReviewCard from "@/components/common/ReviewCard";
 import StatsCard from "@/components/common/StatsCard";
+import { DashboardSkeleton } from "@/components/common/Skeleton";
 import { Button } from "@/components/ui/button";
 import { useProfile } from "@/hooks/useProfile";
 import { useReviews } from "@/hooks/useReviews";
@@ -30,6 +31,10 @@ function Dashboard() {
   }, [reviews]);
 
   const recentReviews = useMemo(() => [...reviews].sort((left, right) => new Date(right.date) - new Date(left.date)).slice(0, 3), [reviews]);
+
+  if (!profile || loading) {
+    return <DashboardSkeleton />;
+  }
 
   return (
     <div className="space-y-6">

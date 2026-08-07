@@ -2,7 +2,7 @@ import { CalendarDays, Mail, Pencil, User } from "lucide-react";
 
 import Badge from "@/components/common/Badge";
 import DashboardCard from "@/components/common/DashboardCard";
-import Loader from "@/components/common/Loader";
+import { ProfileSkeleton } from "@/components/common/Skeleton";
 import { Button } from "@/components/ui/button";
 import { useProfile } from "@/hooks/useProfile";
 import { useReviews } from "@/hooks/useReviews";
@@ -18,8 +18,8 @@ function Profile() {
       })
     : "Unavailable from API";
 
-  if (loading) {
-    return <Loader label="Loading profile..." className="min-h-[50vh]" />;
+  if (loading || !profile) {
+    return <ProfileSkeleton />;
   }
 
   return (

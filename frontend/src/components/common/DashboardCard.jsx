@@ -4,12 +4,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 
 const DashboardCard = memo(function DashboardCard({ title, description, children, className = "" }) {
   return (
-    <Card className={className}>
-      <CardHeader>
-        <CardDescription>{description}</CardDescription>
-        <CardTitle>{title}</CardTitle>
+    <Card className={className ? `${className} surface-panel` : "surface-panel"}>
+      <CardHeader className="px-6 pt-6">
+        <CardDescription className="caption-text">{description}</CardDescription>
+        <CardTitle className="card-title mt-1">{title}</CardTitle>
       </CardHeader>
-      <CardContent>{children}</CardContent>
+      <CardContent className="px-6 pb-6 pt-4">{children}</CardContent>
     </Card>
   );
 });

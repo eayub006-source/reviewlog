@@ -22,10 +22,6 @@ function invalidateMine() {
   reviewCache.mine = null;
 }
 
-function invalidatePublic() {
-  reviewCache.public = null;
-}
-
 export function clearReviewCache() {
   reviewCache.mine = null;
   reviewCache.public = null;

@@ -1,4 +1,4 @@
-from rest_framework import generics, status
+from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -27,7 +27,7 @@ class CatalogItemListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return CatalogItem.objects.filter(user=self.request.user, action=self.kwargs["action"])
+        return CatalogItem.objects.filter(user=self.request.user, action=self.kwargs["action"]).select_related("user")
 
     def perform_create(self, serializer):
         item, _ = CatalogItem.objects.update_or_create(

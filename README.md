@@ -65,6 +65,54 @@ A Django REST Framework backend for **ReviewLog**, a review management applicati
 
 ---
 
+# Architecture
+
+ReviewLog uses a React/Vite frontend and a Django REST Framework API. JWT access and refresh tokens protect all account, review, catalog, favorite, and dashboard endpoints. The React client groups requests into services, stateful fetching into hooks, and shared UI into reusable components. Django keeps API views, serializers, permissions, and external-provider adapters separated by responsibility.
+
+External catalog requests are proxied by Django: Open Library is queried server-side and TMDB is queried with `TMDB_API_KEY` only on the backend. Provider responses are cached for five minutes before being returned to authenticated clients.
+
+## Folder structure
+
+```text
+frontend/src/
+  components/    reusable UI and catalog components
+  hooks/         authenticated data-fetching hooks
+  pages/         route-level screens
+  services/      API and browser-storage clients
+reviews/
+  serializers/   API representation and validation
+  services/      Open Library and TMDB adapters
+  views/         modular authenticated API endpoints
+  migrations/    schema history
+```
+
+## Production features
+
+- Accessible keyboard navigation, visible focus treatments, labeled controls, and dialog semantics
+- Route-level lazy loading, cached review/catalog requests, debounced/cancelable external search, and lazy-loaded images
+- Global toasts, empty states, loading skeletons, offline status, 404/500 routes, and a runtime error boundary
+- User-scoped favorites/recent items and dashboard activity/statistics
+
+## Deployment guide (Render)
+
+1. Create a Render web service from this repository with build command `pip install -r requirements.txt && python manage.py collectstatic --noinput` and start command `gunicorn reviewlog_backend.wsgi`.
+2. Set `DJANGO_SECRET_KEY` to a long random value, `DJANGO_DEBUG=false`, `DJANGO_SECURE_SSL_REDIRECT=true`, `DJANGO_SECURE_HSTS_SECONDS=31536000`, `DJANGO_SECURE_HSTS_PRELOAD=true`, and `TMDB_API_KEY` in Render Environment Variables.
+3. Set `CORS_ALLOWED_ORIGINS` to your deployed frontend URL (comma-separated if there is more than one origin).
+4. Run `python manage.py migrate` as part of the deployment/release workflow.
+5. Deploy the frontend with `npm ci && npm run build`; set its `VITE_API_BASE_URL` according to your hosting configuration if it differs from the default.
+
+Never commit `.env` files, TMDB keys, or Django secrets. A local development environment can export the same variables before starting Django.
+
+## Screenshots
+
+Add screenshots here before a public portfolio/release submission:
+
+- `docs/screenshots/dashboard.png`
+- `docs/screenshots/catalog-search.png`
+- `docs/screenshots/reviews.png`
+
+---
+
 #  Project Structure
 
 ```
@@ -218,6 +266,8 @@ The app runs at `http://localhost:5173/` and connects to the deployed API at `ht
 - Frontend deployment
 - PostgreSQL Support
 - API documentation (Swagger/OpenAPI)
+- Email verification and password-reset flow
+- PostgreSQL, Redis caching, and automated CI/CD for scaled production deployments
 
 ---
 

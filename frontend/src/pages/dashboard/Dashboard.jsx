@@ -1,4 +1,4 @@
-import { ArrowRight, BookOpen, Globe2, PlusCircle, User, BarChart3, Film, Heart } from "lucide-react";
+import { ArrowRight, BookOpen, Globe2, PlusCircle, User, Film, Heart } from "lucide-react";
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -99,7 +99,7 @@ function Dashboard() {
         </DashboardCard>
       </div>
 
-      <DashboardCard title="Recent Reviews" description="Latest activity from your review history.">
+      <DashboardCard title="Latest Activity" description="Your most recent review activity.">
         {loading ? (
           <div className="py-8 text-center text-sm text-slate-500">Loading recent reviews...</div>
         ) : recentReviews.length === 0 ? (

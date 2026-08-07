@@ -16,7 +16,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
         return [IsAuthenticated()]
 
     def get_queryset(self):
-        return Review.objects.filter(user=self.request.user).order_by("-date")
+        return Review.objects.filter(user=self.request.user).select_related("user").order_by("-date", "-id")
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
@@ -27,4 +27,4 @@ class PublicReviewList(generics.ListAPIView):
     permission_classes = [AllowAny]
 
     def get_queryset(self):
-        return Review.objects.filter(is_public=True).order_by("-date")
+        return Review.objects.filter(is_public=True).select_related("user").order_by("-date", "-id")

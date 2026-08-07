@@ -5,7 +5,6 @@ import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import Badge from "@/components/common/Badge";
 import ConfirmDialog from "@/components/common/ConfirmDialog";
 import EmptyState from "@/components/common/EmptyState";
-import Loader from "@/components/common/Loader";
 import Pagination from "@/components/common/Pagination";
 import ReviewCard from "@/components/common/ReviewCard";
 import SearchBar from "@/components/common/SearchBar";

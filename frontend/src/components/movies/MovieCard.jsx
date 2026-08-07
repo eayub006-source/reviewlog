@@ -7,7 +7,7 @@ function MovieCard({ movie, onSelect, onFavorite, className = "" }) {
   return (
     <div role="button" tabIndex={0}
       onClick={() => onSelect?.(movie)}
-      onKeyDown={(event) => event.key === "Enter" && onSelect?.(movie)}
+      onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); onSelect?.(movie); } }}
       className={cn("w-full text-left transition-all duration-200 hover:-translate-y-1 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950", className)}
     >
       <Card className="h-full border-slate-200">

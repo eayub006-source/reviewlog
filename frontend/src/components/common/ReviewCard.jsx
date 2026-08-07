@@ -4,7 +4,6 @@ import { CalendarDays, Pencil, Trash2, Globe2, LockKeyhole, EllipsisVertical } f
 import Badge from "@/components/common/Badge";
 import DropdownMenu from "@/components/common/DropdownMenu";
 import RatingStars from "@/components/common/RatingStars";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Avatar from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";

@@ -176,15 +176,28 @@ Authorization: Bearer <your_access_token>
 
 ---
 
+# Frontend
+
+The React frontend lives in `frontend/`. See [frontend/README.md](frontend/README.md) for setup, routes, and architecture.
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+The app runs at `http://localhost:5173/` and connects to the deployed API at `https://reviewlog.onrender.com/api/`.
+
+---
+
 # Future Improvements
 
-- React Frontend
-- Search Reviews
-- Pagination
+- Backend search, filter, and pagination
 - Categories & Tags
 - Image Uploads
-- Deployment
+- Frontend deployment
 - PostgreSQL Support
+- API documentation (Swagger/OpenAPI)
 
 ---
 

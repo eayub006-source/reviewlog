@@ -97,9 +97,10 @@ reviews/
 
 1. Create a Render web service from this repository with build command `pip install -r requirements.txt && python manage.py collectstatic --noinput` and start command `gunicorn reviewlog_backend.wsgi`.
 2. Set `DJANGO_SECRET_KEY` to a long random value, `DJANGO_DEBUG=false`, `DJANGO_SECURE_SSL_REDIRECT=true`, `DJANGO_SECURE_HSTS_SECONDS=31536000`, `DJANGO_SECURE_HSTS_PRELOAD=true`, and `TMDB_API_KEY` in Render Environment Variables.
-3. Set `CORS_ALLOWED_ORIGINS` to your deployed frontend URL (comma-separated if there is more than one origin).
-4. Run `python manage.py migrate` as part of the deployment/release workflow.
-5. Deploy the frontend with `npm ci && npm run build`; set its `VITE_API_BASE_URL` according to your hosting configuration if it differs from the default.
+3. Set `ALLOWED_HOSTS` to a comma-separated list of accepted hosts: `localhost,127.0.0.1,reviewlog.onrender.com,reviewlog.vercel.app,reviewlog-2lafwjpe0-eshal-s-projects2.vercel.app`.
+4. Set `CORS_ALLOWED_ORIGINS` to the comma-separated frontend origins: `http://localhost:5173,https://reviewlog.vercel.app,https://reviewlog-2lafwjpe0-eshal-s-projects2.vercel.app`.
+5. Run `python manage.py migrate` as part of the deployment/release workflow.
+6. Deploy the frontend with `npm ci && npm run build`; set its `VITE_API_BASE_URL` according to your hosting configuration if it differs from the default.
 
 Never commit `.env` files, TMDB keys, or Django secrets. A local development environment can export the same variables before starting Django.
 

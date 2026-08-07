@@ -46,11 +46,14 @@ DEBUG = os.environ.get("DJANGO_DEBUG", "true").lower() == "true"
 if not DEBUG and SECRET_KEY == "django-insecure-local-development-only":
     raise ImproperlyConfigured("DJANGO_SECRET_KEY must be set when DJANGO_DEBUG is false.")
 
-ALLOWED_HOSTS = [
-    "127.0.0.1",
-    "localhost",
-    ".onrender.com",
-]
+def comma_separated_environment(name, default=""):
+    return [value.strip() for value in os.getenv(name, default).split(",") if value.strip()]
+
+
+ALLOWED_HOSTS = comma_separated_environment(
+    "ALLOWED_HOSTS",
+    "localhost,127.0.0.1,reviewlog.onrender.com,reviewlog.vercel.app,reviewlog-2lafwjpe0-eshal-s-projects2.vercel.app",
+)
 
 
 # Application definition
@@ -168,14 +171,10 @@ SIMPLE_JWT = {
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
 }
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://localhost:5173",
-]
-
-extra_cors_origins = os.environ.get("CORS_ALLOWED_ORIGINS", "")
-if extra_cors_origins:
-    CORS_ALLOWED_ORIGINS.extend(origin.strip() for origin in extra_cors_origins.split(",") if origin.strip())
+CORS_ALLOWED_ORIGINS = comma_separated_environment(
+    "CORS_ALLOWED_ORIGINS",
+    "http://localhost:3000,http://localhost:5173,https://reviewlog.vercel.app,https://reviewlog-2lafwjpe0-eshal-s-projects2.vercel.app",
+)
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SECURE_SSL_REDIRECT = os.environ.get("DJANGO_SECURE_SSL_REDIRECT", "false").lower() == "true"

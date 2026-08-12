@@ -1,30 +1,29 @@
-import { ArrowRight, BookOpen, Globe2, PlusCircle, User, Film, Heart } from "lucide-react";
-import { useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { Compass, NotebookText } from "lucide-react";
 
-import DashboardCard from "@/components/common/DashboardCard";
-import EmptyState from "@/components/common/EmptyState";
-import ReviewCard from "@/components/common/ReviewCard";
-import StatsCard from "@/components/common/StatsCard";
-import { DashboardSkeleton } from "@/components/common/Skeleton";
-import { Button } from "@/components/ui/button";
 import { useProfile } from "@/hooks/useProfile";
 import { useReviews } from "@/hooks/useReviews";
 import { useToast } from "@/hooks/useToast";
 import { getFavorites, getRecentItems } from "@/services/favoriteService";
-import { useEffect, useState } from "react";
+import HeroBanner from "@/components/common/HeroBanner";
+import Carousel from "@/components/common/Carousel";
+import MediaCard from "@/components/common/MediaCard";
+import ReviewCard from "@/components/common/ReviewCard";
+import { DashboardSkeleton } from "@/components/common/Skeleton";
 
 function Dashboard() {
   const navigate = useNavigate();
   const { profile } = useProfile();
   const { reviews, loading } = useReviews({ scope: "mine" });
   const { showToast } = useToast();
-  const [catalog, setCatalog] = useState({ favorites: 0, recent: [] });
+  const [catalog, setCatalog] = useState({ favorites: [], recent: [] });
+  const [catalogLoading, setCatalogLoading] = useState(true);
 
   useEffect(() => {
     Promise.all([getFavorites(), getRecentItems()])
       .then(([favorites, recent]) => {
-        setCatalog({ favorites: favorites.length, recent: recent.slice(0, 4) });
+        setCatalog({ favorites: favorites || [], recent: recent || [] });
       })
       .catch(() => {
         showToast({
@@ -32,121 +31,185 @@ function Dashboard() {
           title: "Dashboard sync failed",
           description: "Could not load your saved favorites or recently viewed items."
         });
-      });
+      })
+      .finally(() => setCatalogLoading(false));
   }, [showToast]);
 
   const stats = useMemo(() => {
     const totalReviews = reviews.length;
-    const publicReviews = reviews.filter((review) => review.is_public).length;
-    const booksReviewed = reviews.filter((review) => review.item_type === "book").length;
-    const moviesReviewed = reviews.filter((review) => review.item_type === "movie").length;
-
-    return {
-      totalReviews,
-      publicReviews,
-      booksReviewed,
-      moviesReviewed,
-    };
+    const booksReviewed = reviews.filter((r) => r.item_type === "book").length;
+    const moviesReviewed = reviews.filter((r) => r.item_type === "movie").length;
+    return { totalReviews, booksReviewed, moviesReviewed };
   }, [reviews]);
 
-  const recentReviews = useMemo(() => [...reviews].sort((left, right) => new Date(right.date) - new Date(left.date)).slice(0, 3), [reviews]);
+  const recentReviews = useMemo(() => 
+    [...reviews].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 4), 
+  [reviews]);
 
-  if (!profile || loading) {
+  if (!profile || loading || catalogLoading) {
     return <DashboardSkeleton />;
   }
 
+  // Determine the featured item for the HeroBanner
+  const featuredItem = catalog.recent.length > 0 
+    ? catalog.recent[0] 
+    : catalog.favorites.length > 0 ? catalog.favorites[0] : null;
+
+  // Format helper for MediaCard
+  const toMediaItem = (item) => ({
+    id: item.item_id,
+    title: item.title,
+    posterUrl: item.item_type === "movie" ? item.image : null,
+    coverUrl: item.item_type === "book" ? item.image : null,
+    releaseDate: item.metadata?.releaseDate,
+    firstPublishYear: item.metadata?.firstPublishYear,
+    author: item.metadata?.author,
+    averageRating: item.metadata?.averageRating,
+    overview: item.metadata?.overview,
+  });
+
   return (
-    <div className="space-y-6">
-      <DashboardCard title={`Welcome, ${profile?.username ?? "Reviewer"}`} description="Your ReviewLog dashboard overview.">
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-          <StatsCard title="Reviews Created" value={stats.totalReviews} icon={BookOpen} />
-          <StatsCard title="Books Reviewed" value={stats.booksReviewed} icon={BookOpen} tone="accent" />
-          <StatsCard title="Movies Reviewed" value={stats.moviesReviewed} icon={Film} tone="subtle" />
-          <StatsCard title="Favorites" value={catalog.favorites} icon={Heart} />
-          <StatsCard title="Public Reviews" value={stats.publicReviews} icon={Globe2} tone="accent" />
-        </div>
-      </DashboardCard>
-
-      <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
-        <DashboardCard title="Quick Actions" description="Jump to the most common review tasks.">
-          <div className="grid gap-3 sm:grid-cols-2">
-            {[
-              { title: "Create Review", description: "Start a new review entry.", icon: PlusCircle, action: () => navigate("/reviews/new") },
-              { title: "My Reviews", description: "Review and manage your entries.", icon: BookOpen, action: () => navigate("/reviews") },
-              { title: "Find Books", description: "Search Open Library.", icon: BookOpen, action: () => navigate("/books") },
-              { title: "Find Movies", description: "Search TMDB.", icon: Film, action: () => navigate("/movies") },
-              { title: "Public Reviews", description: "Browse published content.", icon: Globe2, action: () => navigate("/public-reviews") },
-              { title: "Profile", description: "Inspect your account details.", icon: User, action: () => navigate("/profile") },
-            ].map((item) => (
-              <button
-                key={item.title}
-                type="button"
-                onClick={item.action}
-                className="group rounded-3xl border border-slate-200 bg-slate-50 p-4 text-left transition-all duration-200 hover:-translate-y-1 hover:border-slate-300 hover:bg-white hover:shadow-lg"
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <div className="rounded-2xl bg-slate-950 p-3 text-white">
-                    <item.icon className="h-4 w-4" />
-                  </div>
-                  <ArrowRight className="h-4 w-4 text-slate-400 transition-transform group-hover:translate-x-1" />
-                </div>
-                <h3 className="mt-4 text-base font-semibold text-slate-950">{item.title}</h3>
-                <p className="mt-1 text-sm leading-6 text-slate-600">{item.description}</p>
-              </button>
-            ))}
-          </div>
-        </DashboardCard>
-
-        <DashboardCard title="Profile Snapshot" description="Current account data loaded from the backend.">
-          <div className="space-y-4">
-            <ProfileField label="Username" value={profile?.username ?? "-"} />
-            <ProfileField label="Email" value={profile?.email ?? "-"} />
-            <ProfileField label="Member Since" value={profile?.date_joined ? new Date(profile.date_joined).toLocaleDateString("en", { month: "short", year: "numeric" }) : "Unavailable from API"} />
-            <ProfileField label="Reviews Created" value={stats.totalReviews} />
-            <div className="rounded-3xl bg-slate-950 px-5 py-4 text-white">
-              <p className="text-sm text-slate-300">Need a broader overview?</p>
-              <Button variant="outline" className="mt-4 h-10 rounded-full border-white/20 bg-white/5 px-4 text-white hover:bg-white hover:text-slate-950" onClick={() => navigate("/reviews")}>
-                <BookOpen className="h-4 w-4" />
-                Manage reviews
-              </Button>
-            </div>
-          </div>
-        </DashboardCard>
+    <div className="space-y-12 pb-10">
+      
+      {/* Dynamic Greeting */}
+      <div>
+        <h1 className="page-title mb-1 text-4xl">
+          Good to see you, {profile?.username ?? "Traveller"}.
+        </h1>
+        <p className="body-text text-lg">
+          Your private library is waiting. Discover new stories and log your thoughts.
+        </p>
       </div>
 
-      <DashboardCard title="Latest Activity" description="Your most recent review activity.">
-        {loading ? (
-          <div className="py-8 text-center text-sm text-slate-500">Loading recent reviews...</div>
-        ) : recentReviews.length === 0 ? (
-          <EmptyState
-            title="No reviews yet"
-            description="Create your first review to see it appear here and in the statistics above."
-            actionLabel="Create Review"
-            onAction={() => navigate("/reviews/new")}
-          />
-        ) : (
-          <div className="grid gap-4">
-            {recentReviews.map((review) => (
-              <ReviewCard
-                key={review.id}
-                review={review}
-                showActions={false}
+      {/* Cinematic Hero Spotlight */}
+      {featuredItem ? (
+        <HeroBanner
+          item={toMediaItem(featuredItem)}
+          type={featuredItem.item_type}
+          onSelect={() => navigate(`/reviews/new?item=${encodeURIComponent(
+            JSON.stringify({
+              type: featuredItem.item_type,
+              id: featuredItem.item_id,
+              source: featuredItem.external_source,
+              title: featuredItem.title,
+              image: featuredItem.image,
+              metadata: featuredItem.metadata
+            })
+          )}`)}
+        />
+      ) : (
+        <div className="surface-card p-12 text-center rounded-2xl bg-[#e8e3dc] flex flex-col items-center justify-center min-h-[300px]">
+          <Compass className="h-12 w-12 text-primary mb-4 opacity-50" />
+          <h2 className="font-heading text-2xl font-bold text-foreground mb-2">Your library is empty</h2>
+          <p className="body-text max-w-md">
+            Start searching for books and movies to populate your featured dashboard spotlight.
+          </p>
+          <div className="flex gap-4 mt-6">
+            <button className="btn btn-primary" onClick={() => navigate("/movies")}>Find Movies</button>
+            <button className="btn btn-outline" onClick={() => navigate("/books")}>Find Books</button>
+          </div>
+        </div>
+      )}
+
+      {/* Horizontal Carousels */}
+      {catalog.recent.length > 0 && (
+        <Carousel title="Recently Viewed" description="Jump back into items you explored recently.">
+          {catalog.recent.map((item) => (
+            <div key={item.id} className="w-[160px] sm:w-[180px] shrink-0 snap-start">
+              <MediaCard
+                item={toMediaItem(item)}
+                type={item.item_type}
+                onSelect={() => navigate(`/reviews/new?item=${encodeURIComponent(
+                  JSON.stringify({
+                    type: item.item_type,
+                    id: item.item_id,
+                    source: item.external_source,
+                    title: item.title,
+                    image: item.image,
+                    metadata: item.metadata
+                  })
+                )}`)}
               />
+            </div>
+          ))}
+        </Carousel>
+      )}
+
+      {catalog.favorites.length > 0 && (
+        <Carousel title="Your Favorites Vault" description="Books and movies you've saved for later.">
+          {catalog.favorites.map((item) => (
+            <div key={item.id} className="w-[160px] sm:w-[180px] shrink-0 snap-start">
+              <MediaCard
+                item={toMediaItem(item)}
+                type={item.item_type}
+                isFavorite={true}
+                onSelect={() => navigate(`/reviews/new?item=${encodeURIComponent(
+                  JSON.stringify({
+                    type: item.item_type,
+                    id: item.item_id,
+                    source: item.external_source,
+                    title: item.title,
+                    image: item.image,
+                    metadata: item.metadata
+                  })
+                )}`)}
+              />
+            </div>
+          ))}
+        </Carousel>
+      )}
+
+      {/* Recent Reviews Feed */}
+      <section>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-heading font-bold text-foreground">Latest Journal Entries</h2>
+          {reviews.length > 0 && (
+            <button onClick={() => navigate("/reviews")} className="text-sm font-semibold text-primary hover:text-[#244820]">
+              View all reviews →
+            </button>
+          )}
+        </div>
+        
+        {recentReviews.length === 0 ? (
+          <div className="surface-card p-10 text-center flex flex-col items-center">
+            <NotebookText className="h-10 w-10 text-muted-foreground opacity-50 mb-3" />
+            <p className="text-foreground font-semibold">No journal entries yet.</p>
+            <p className="text-sm text-muted-foreground mt-1 mb-5">
+              Review a movie or book to see your activity here.
+            </p>
+            <button className="btn btn-secondary" onClick={() => navigate("/reviews/new")}>
+              Write a Review
+            </button>
+          </div>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {recentReviews.map((review) => (
+              <ReviewCard key={review.id} review={review} showActions={false} />
             ))}
           </div>
         )}
-      </DashboardCard>
+      </section>
 
-      {catalog.recent.length ? <DashboardCard title="Recently Viewed" description="External items you opened most recently."><div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{catalog.recent.map((item) => <button key={item.id} type="button" onClick={() => navigate(`/reviews/new?item=${encodeURIComponent(JSON.stringify({ type: item.item_type, id: item.item_id, source: item.external_source, title: item.title, image: item.image, metadata: item.metadata }))}`)} className="flex gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3 text-left hover:bg-white"><div className="h-12 w-9 overflow-hidden rounded bg-slate-200">{item.image ? <img src={item.image} alt="" className="h-full w-full object-cover" /> : null}</div><div className="min-w-0"><p className="truncate text-sm font-semibold">{item.title}</p><p className="text-xs text-slate-500">{item.item_type}</p></div></button>)}</div></DashboardCard> : null}
-    </div>
-  );
-}
+      {/* Mini Stats Footer */}
+      <section className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-border">
+        <div className="surface-card p-5 text-center">
+          <p className="text-3xl font-heading font-bold text-foreground">{stats.totalReviews}</p>
+          <p className="text-xs uppercase tracking-wider text-muted-foreground mt-1 font-bold">Total Reviews</p>
+        </div>
+        <div className="surface-card p-5 text-center">
+          <p className="text-3xl font-heading font-bold text-foreground">{stats.moviesReviewed}</p>
+          <p className="text-xs uppercase tracking-wider text-muted-foreground mt-1 font-bold">Films Logged</p>
+        </div>
+        <div className="surface-card p-5 text-center">
+          <p className="text-3xl font-heading font-bold text-foreground">{stats.booksReviewed}</p>
+          <p className="text-xs uppercase tracking-wider text-muted-foreground mt-1 font-bold">Books Logged</p>
+        </div>
+        <div className="surface-card p-5 text-center">
+          <p className="text-3xl font-heading font-bold text-foreground">{catalog.favorites.length}</p>
+          <p className="text-xs uppercase tracking-wider text-muted-foreground mt-1 font-bold">Favorites</p>
+        </div>
+      </section>
 
-function ProfileField({ label, value }) {
-  return (
-    <div className="flex items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
-      <span className="font-medium text-slate-600">{label}</span>
-      <span className="font-semibold text-slate-950">{value}</span>
     </div>
   );
 }

@@ -1,14 +1,16 @@
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { lazy, Suspense } from "react";
 
 import AuthLayout from "@/layouts/AuthLayout";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import ProtectedRoute from "@/routes/ProtectedRoute";
 import Loader from "@/components/common/Loader";
+import Splash from "@/pages/Splash";
 
 const Login = lazy(() => import("@/pages/auth/Login"));
 const Register = lazy(() => import("@/pages/auth/Register"));
 const Dashboard = lazy(() => import("@/pages/dashboard/Dashboard"));
+const Discover = lazy(() => import("@/pages/discover/Discover"));
 const Profile = lazy(() => import("@/pages/profile/Profile"));
 const Reviews = lazy(() => import("@/pages/reviews/Reviews"));
 const ReviewForm = lazy(() => import("@/pages/reviews/ReviewForm"));
@@ -35,7 +37,7 @@ function App() {
     <BrowserRouter>
       <Suspense fallback={<RouteFallback />}>
         <Routes>
-          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/" element={<Splash />} />
 
           <Route element={<AuthLayout />}>
             <Route path="/login" element={<Login />} />
@@ -45,6 +47,7 @@ function App() {
           <Route element={<ProtectedRoute />}>
             <Route element={<DashboardLayout />}>
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/discover" element={<Discover />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/reviews" element={<Reviews />} />
               <Route path="/reviews/new" element={<ReviewForm />} />
@@ -69,8 +72,8 @@ function App() {
 
 function RouteFallback() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50">
-      <Loader label="Loading page..." />
+    <div className="flex min-h-screen items-center justify-center bg-background">
+      <Loader label="Loading..." />
     </div>
   );
 }

@@ -1,19 +1,23 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { SearchX, LayoutGrid, List } from "lucide-react";
 
-import DashboardCard from "@/components/common/DashboardCard";
 import EmptyState from "@/components/common/EmptyState";
 import { ReviewListSkeleton } from "@/components/common/Skeleton";
 import Pagination from "@/components/common/Pagination";
 import ReviewCard from "@/components/common/ReviewCard";
 import SearchBar from "@/components/common/SearchBar";
 import { useReviews } from "@/hooks/useReviews";
+import { cn } from "@/lib/utils";
 
-const PAGE_SIZE = 6;
+const PAGE_SIZE = 12;
 
 function PublicReviews() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { reviews, loading, error } = useReviews({ scope: "public" });
+  
+  const [viewMode, setViewMode] = useState("list"); // "grid" or "list"
+  
   const query = searchParams.get("q") ?? "";
   const page = Math.max(Number(searchParams.get("page") ?? 1), 1);
 
@@ -45,35 +49,86 @@ function PublicReviews() {
   }
 
   return (
-    <div className="space-y-6">
-      <DashboardCard title="Public Reviews" description="Browse published reviews from the community.">
-        <SearchBar value={query} onChange={handleSearchChange} className="w-full lg:max-w-md" />
-      </DashboardCard>
+    <div className="space-y-6 pb-10">
+      
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div>
+          <h1 className="page-title mb-1">Community Feed</h1>
+          <p className="body-text">
+            Discover thoughts and reviews shared by the community.
+          </p>
+        </div>
+      </div>
 
-      {error ? <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div> : null}
+      <div className="surface-panel p-4 md:px-6 rounded-2xl flex flex-col lg:flex-row gap-4 lg:items-center justify-between">
+        <div className="flex-1 max-w-lg">
+          <SearchBar 
+            value={query} 
+            onChange={handleSearchChange} 
+            placeholder="Search community reviews..." 
+          />
+        </div>
+
+        <div className="hidden sm:flex items-center gap-2">
+          <button
+            onClick={() => setViewMode("grid")}
+            className={cn("p-1.5 rounded-md transition-colors", viewMode === "grid" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted")}
+          >
+            <LayoutGrid className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setViewMode("list")}
+            className={cn("p-1.5 rounded-md transition-colors", viewMode === "list" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted")}
+          >
+            <List className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      {error ? (
+        <div className="rounded-lg border border-destructive bg-[#fce8e8] p-4 text-sm text-destructive font-semibold">
+          {error}
+        </div>
+      ) : null}
 
       {pageReviews.length === 0 ? (
-        <EmptyState
-          title="No public reviews yet"
-          description="Once users publish reviews, they will appear here with pagination and search."
-        />
+        <div className="py-16">
+          <EmptyState
+            icon={SearchX}
+            title={query ? "No matches found" : "No public reviews yet"}
+            description={
+              query
+                ? "Try adjusting your search term."
+                : "When users publish reviews, they will appear here."
+            }
+          />
+        </div>
       ) : (
-        <div className="grid gap-4">
+        <div className={viewMode === "grid" ? "grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "flex flex-col gap-4 max-w-4xl mx-auto"}>
           {pageReviews.map((review) => (
-            <ReviewCard key={review.id} review={review} showAuthor showActions={false} />
+            <ReviewCard 
+              key={review.id} 
+              review={review} 
+              showAuthor 
+              showActions={false} 
+            />
           ))}
         </div>
       )}
 
-      <Pagination
-        page={currentPage}
-        totalPages={totalPages}
-        onPageChange={(nextPage) => {
-          const next = new URLSearchParams(searchParams);
-          next.set("page", String(nextPage));
-          setSearchParams(next, { replace: true });
-        }}
-      />
+      {totalPages > 1 && (
+        <div className="pt-8 flex justify-center">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={(nextPage) => {
+              const next = new URLSearchParams(searchParams);
+              next.set("page", String(nextPage));
+              setSearchParams(next, { replace: true });
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 }

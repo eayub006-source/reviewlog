@@ -1,18 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { LoaderCircle, Save } from "lucide-react";
+import { useNavigate, useParams, useSearchParams, Link } from "react-router-dom";
+import { LoaderCircle, Save, ChevronLeft, Globe2, LockKeyhole } from "lucide-react";
 
-import Badge from "@/components/common/Badge";
-import DashboardCard from "@/components/common/DashboardCard";
 import { FormSkeleton } from "@/components/common/Skeleton";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { useReviews } from "@/hooks/useReviews";
 import { getFriendlyApiError } from "@/utils/apiErrors";
+import { cn } from "@/lib/utils";
 
 const INITIAL_FORM = {
   title: "",
@@ -33,6 +26,7 @@ function ReviewForm() {
   const [loading, setLoading] = useState(isEditMode);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  
   const externalItem = useMemo(() => {
     try { return JSON.parse(searchParams.get("item") || "null"); } catch { return null; }
   }, [searchParams]);
@@ -42,13 +36,11 @@ function ReviewForm() {
 
   useEffect(() => {
     let mounted = true;
-
     async function loadReview() {
       if (!isEditMode) {
         setLoading(false);
         return;
       }
-
       try {
         const review = await getReviewById(reviewId);
         if (mounted) {
@@ -60,21 +52,13 @@ function ReviewForm() {
           });
         }
       } catch (caughtError) {
-        if (mounted) {
-          setError(getFriendlyApiError(caughtError));
-        }
+        if (mounted) setError(getFriendlyApiError(caughtError));
       } finally {
-        if (mounted) {
-          setLoading(false);
-        }
+        if (mounted) setLoading(false);
       }
     }
-
     loadReview();
-
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, [getReviewById, isEditMode, reviewId]);
 
   useEffect(() => {
@@ -85,19 +69,9 @@ function ReviewForm() {
 
   const validation = useMemo(() => {
     const next = {};
-
-    if (!form.title.trim()) {
-      next.title = "Title is required.";
-    }
-
-    if (!form.content.trim()) {
-      next.content = "Content is required.";
-    }
-
-    if (!form.rating) {
-      next.rating = "Rating is required.";
-    }
-
+    if (!form.title.trim()) next.title = "Title is required.";
+    if (!form.content.trim()) next.content = "Content is required.";
+    if (!form.rating) next.rating = "Rating is required.";
     return next;
   }, [form.content, form.rating, form.title]);
 
@@ -119,7 +93,6 @@ function ReviewForm() {
     }
 
     setSubmitting(true);
-
     const payload = {
       title: form.title.trim(),
       content: form.content.trim(),
@@ -139,7 +112,6 @@ function ReviewForm() {
       } else {
         await createReview(payload);
       }
-
       navigate("/reviews", {
         replace: true,
         state: {
@@ -157,71 +129,133 @@ function ReviewForm() {
     }
   }
 
-  if (loading) {
-    return <FormSkeleton />;
-  }
+  if (loading) return <FormSkeleton />;
 
   return (
-    <DashboardCard
-      title={isEditMode ? "Edit Review" : "Create Review"}
-      description={externalItem ? `Writing a review for ${externalItem.title}.` : "Save a new review or update an existing one using the deployed API."}
-    >
-      <form className="space-y-6" onSubmit={handleSubmit} noValidate>
-        <div className="space-y-2">
-          <Label htmlFor="title">Title</Label>
-          <Input id="title" name="title" value={form.title} onChange={handleChange} placeholder="Enter review title" />
-          <div className="flex items-center justify-between text-xs text-slate-500">
-            <span>{validation.title ?? " "}</span>
-            <span>{titleCount}/255</span>
-          </div>
-        </div>
+    <div className="max-w-3xl mx-auto pb-10 space-y-8">
+      <div>
+        <button 
+          onClick={() => navigate(-1)} 
+          className="flex items-center gap-1.5 text-sm font-semibold text-muted-foreground hover:text-primary mb-4 transition-colors group"
+        >
+          <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+          Back
+        </button>
+        <h1 className="page-title mb-1">
+          {isEditMode ? "Edit your entry" : "Write a new entry"}
+        </h1>
+        <p className="body-text">
+          {isEditMode ? "Refine your thoughts on this story." : "Log your thoughts and rate your experience."}
+        </p>
+      </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="content">Content</Label>
-          <Textarea id="content" name="content" value={form.content} onChange={handleChange} placeholder="Write your review" />
-          <div className="flex items-center justify-between text-xs text-slate-500">
-            <span>{validation.content ?? " "}</span>
-            <span>{contentCount}/2000</span>
-          </div>
-        </div>
+      <div className="surface-panel p-6 md:p-10 relative overflow-hidden">
+        {/* Subtle Decorative Sunburst */}
+        <div className="absolute -right-20 -top-20 w-64 h-64 rounded-full bg-[radial-gradient(circle_at_center,_#fcf3d9_0%,_transparent_70%)] opacity-40 pointer-events-none" />
 
-        <div className="grid gap-4 md:grid-cols-[1fr_1fr]">
-          <div className="space-y-2">
-            <Label htmlFor="rating">Rating</Label>
-            <Select
-              id="rating"
-              name="rating"
-              value={form.rating}
-              onChange={handleChange}
+        <form onSubmit={handleSubmit} className="relative z-10 space-y-8">
+          <div className="space-y-6">
+            <div>
+              <label className="block text-sm font-semibold mb-2">Review Title</label>
+              <div className="relative">
+                <input
+                  name="title"
+                  className={cn("field h-12", validation.title && "border-destructive focus:ring-destructive/20")}
+                  placeholder="The name of the book or film..."
+                  value={form.title}
+                  onChange={handleChange}
+                  maxLength={100}
+                />
+                <span className="absolute right-3 bottom-[-22px] text-[10px] font-bold text-muted-foreground opacity-50 uppercase tracking-tighter">
+                  {titleCount}/100 characters
+                </span>
+              </div>
+            </div>
+
+            <div className="grid gap-6 sm:grid-cols-2">
+              <div>
+                <label className="block text-sm font-semibold mb-2">Rating</label>
+                <select 
+                  name="rating" 
+                  value={form.rating} 
+                  onChange={handleChange} 
+                  className="field h-12 appearance-none cursor-pointer"
+                >
+                  <option value="5">5 - Excellent</option>
+                  <option value="4">4 - Very Good</option>
+                  <option value="3">3 - Good</option>
+                  <option value="2">2 - Fair</option>
+                  <option value="1">1 - Poor</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold mb-2">Visibility</label>
+                <div className="flex items-center gap-2 p-1 bg-muted rounded-xl border border-border h-12">
+                  <button
+                    type="button"
+                    onClick={() => setForm(f => ({ ...f, is_public: true }))}
+                    className={cn(
+                      "flex-1 flex items-center justify-center gap-2 rounded-lg text-xs font-bold transition-all h-full",
+                      form.is_public ? "bg-card text-foreground shadow-sm border border-border" : "text-muted-foreground"
+                    )}
+                  >
+                    <Globe2 className="w-3.5 h-3.5" /> Public
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setForm(f => ({ ...f, is_public: false }))}
+                    className={cn(
+                      "flex-1 flex items-center justify-center gap-2 rounded-lg text-xs font-bold transition-all h-full",
+                      !form.is_public ? "bg-card text-foreground shadow-sm border border-border" : "text-muted-foreground"
+                    )}
+                  >
+                    <LockKeyhole className="w-3.5 h-3.5" /> Private
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold mb-2">Your Thoughts</label>
+              <div className="relative">
+                <textarea
+                  name="content"
+                  className={cn("field min-h-[220px] py-4 resize-y", validation.content && "border-destructive focus:ring-destructive/20")}
+                  placeholder="What did you think about this story? Would you recommend it?"
+                  value={form.content}
+                  onChange={handleChange}
+                  maxLength={2000}
+                />
+                <span className="absolute right-3 bottom-[-22px] text-[10px] font-bold text-muted-foreground opacity-50 uppercase tracking-tighter">
+                  {contentCount}/2000 characters
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {error && (
+            <div className="rounded-lg border border-destructive bg-[#fce8e8] p-4">
+              <p className="text-sm text-destructive font-semibold">{error}</p>
+            </div>
+          )}
+
+          <div className="pt-4 flex flex-col sm:flex-row justify-end gap-3">
+             <Link to="/reviews" className="btn btn-ghost px-8 order-2 sm:order-1">
+               Discard
+             </Link>
+             <button 
+              type="submit" 
+              disabled={submitting} 
+              className="btn btn-primary px-10 order-1 sm:order-2"
             >
-              {[5, 4, 3, 2, 1].map((value) => (
-                <option key={value} value={value}>
-                  {value} Stars
-                </option>
-              ))}
-            </Select>
+              {submitting ? <LoaderCircle className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
+              {isEditMode ? "Update Journal" : "Save Journal Entry"}
+            </button>
           </div>
-
-          <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
-            <Checkbox name="is_public" checked={form.is_public} onChange={handleChange} />
-            Make this review public
-          </label>
-        </div>
-
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <Badge tone={form.is_public ? "success" : "subtle"}>{form.is_public ? "Public" : "Private"}</Badge>
-          <div className="flex items-center gap-3">
-            <Button type="button" variant="outline" className="rounded-2xl px-5" onClick={() => navigate("/reviews")}>Cancel</Button>
-            <Button type="submit" className="rounded-2xl px-5" disabled={submitting}>
-              {submitting ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-              {submitting ? "Saving..." : isEditMode ? "Update Review" : "Create Review"}
-            </Button>
-          </div>
-        </div>
-
-        {error ? <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div> : null}
-      </form>
-    </DashboardCard>
+        </form>
+      </div>
+    </div>
   );
 }
 

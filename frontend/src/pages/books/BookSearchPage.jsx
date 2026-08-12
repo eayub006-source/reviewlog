@@ -1,5 +1,4 @@
 import BookSearch from "@/components/books/BookSearch";
-import DashboardCard from "@/components/common/DashboardCard";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { saveFavorite, saveRecentItem } from "@/services/favoriteService";
 import { useToast } from "@/hooks/useToast";
@@ -58,16 +57,22 @@ function BookSearchPage() {
   };
 
   return (
-    <DashboardCard
-      title="Search Books"
-      description="Find a book on Open Library and use it to pre-fill your review."
-    >
-      <BookSearch
-        initialQuery={searchParams.get("q") || ""}
-        onSelect={handleSelect}
-        onFavorite={handleFavorite}
-      />
-    </DashboardCard>
+    <div className="space-y-6 pb-10">
+      <div>
+        <h1 className="page-title mb-1">Book Discovery</h1>
+        <p className="body-text max-w-2xl">
+          Search the catalog to discover books and log your literary journey.
+        </p>
+      </div>
+
+      <div className="surface-panel p-6 md:p-8">
+        <BookSearch
+          initialQuery={searchParams.get("q") || ""}
+          onSelect={handleSelect}
+          onFavorite={handleFavorite}
+        />
+      </div>
+    </div>
   );
 }
 

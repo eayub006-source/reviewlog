@@ -1,23 +1,15 @@
 import { memo, useMemo } from "react";
 import { CalendarDays, Pencil, Trash2, Globe2, LockKeyhole, EllipsisVertical } from "lucide-react";
 
-import Badge from "@/components/common/Badge";
 import DropdownMenu from "@/components/common/DropdownMenu";
 import RatingStars from "@/components/common/RatingStars";
-import { Card, CardContent } from "@/components/ui/card";
 import Avatar from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
 function formatReviewDate(dateValue) {
-  if (!dateValue) {
-    return "Unknown date";
-  }
-
+  if (!dateValue) return "Unknown date";
   const date = new Date(dateValue);
-  if (Number.isNaN(date.getTime())) {
-    return dateValue;
-  }
-
+  if (Number.isNaN(date.getTime())) return dateValue;
   return new Intl.DateTimeFormat("en", {
     month: "short",
     day: "numeric",
@@ -37,6 +29,7 @@ const ReviewCard = memo(function ReviewCard({
   const lastUpdated = review.updated_at ?? review.updated ?? review.modified_at ?? review.date;
   const preview = review.content?.length > 160 ? `${review.content.slice(0, 160).trimEnd()}...` : review.content;
   const visibility = review.is_public ? "Public" : "Private";
+  
   const menuItems = useMemo(
     () => [
       onEdit ? { label: "Edit", icon: Pencil, onSelect: () => onEdit(review) } : null,
@@ -46,57 +39,61 @@ const ReviewCard = memo(function ReviewCard({
   );
 
   return (
-    <Card className={cn("border-slate-200 transition-all duration-200 hover:-translate-y-1 hover:shadow-xl", className)}>
-      <CardContent className="space-y-5 p-5">
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-3">
-              <h3 className="truncate text-lg font-semibold tracking-tight text-slate-950">{review.title}</h3>
-              <Badge tone={review.is_public ? "success" : "subtle"}>
-                {review.is_public ? <Globe2 className="mr-1 h-3 w-3" /> : <LockKeyhole className="mr-1 h-3 w-3" />}
-                {visibility}
-              </Badge>
-            </div>
-            {showAuthor ? (
-              <div className="mt-3 flex items-center gap-3">
-                <Avatar name={authorName} size="sm" />
-                <div>
-                  <p className="text-sm font-medium text-slate-950">{authorName}</p>
-                  <p className="text-xs text-slate-500">Published review</p>
-                </div>
-              </div>
-            ) : null}
-          </div>
-          <div className="flex flex-col items-end gap-2">
-            <Badge tone="warning">{review.rating}/5</Badge>
-            {showActions && menuItems.length > 0 ? (
-              <DropdownMenu
-                triggerLabel={<EllipsisVertical className="h-4 w-4" />}
-                buttonClassName="h-9 w-9 rounded-full px-0"
-                align="right"
-                items={menuItems}
-              />
-            ) : null}
-          </div>
-        </div>
-
-        <RatingStars rating={review.rating} showValue />
-
-        <p className="text-sm leading-6 text-slate-600">{preview}</p>
-
-        <div className="grid gap-3 border-t border-slate-200 pt-4 sm:grid-cols-2 sm:items-center sm:justify-between text-sm text-slate-500">
-          <div className="flex flex-col gap-1">
-            <span className="flex items-center gap-2">
-              <CalendarDays className="h-4 w-4" />
-              Created {formatReviewDate(review.date)}
+    <article className={cn("surface-card flex flex-col gap-4 p-5 transition-transform duration-300 hover:-translate-y-1 hover:shadow-md", className)}>
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2 mb-1">
+            <h3 className="card-title truncate text-base">{review.title}</h3>
+            <span className="pill flex items-center gap-1">
+              {review.is_public ? <Globe2 className="h-3 w-3" /> : <LockKeyhole className="h-3 w-3" />}
+              {visibility}
             </span>
-            <span>Last updated {formatReviewDate(lastUpdated)}</span>
           </div>
+          
+          <RatingStars rating={review.rating} />
 
-          {showActions && menuItems.length > 0 ? <span className="text-right text-xs text-slate-400">Actions in menu</span> : null}
+          {showAuthor && (
+            <div className="mt-4 flex items-center gap-2">
+              <Avatar name={authorName} size="sm" className="bg-primary text-primary-foreground font-bold" />
+              <div>
+                <p className="text-sm font-semibold text-foreground">{authorName}</p>
+                <p className="text-xs text-muted-foreground">Reviewer</p>
+              </div>
+            </div>
+          )}
         </div>
-      </CardContent>
-    </Card>
+        
+        {showActions && menuItems.length > 0 && (
+          <div className="shrink-0 -mr-2 -mt-2">
+            <DropdownMenu
+              triggerLabel={<EllipsisVertical className="h-5 w-5 text-muted-foreground" />}
+              buttonClassName="h-9 w-9 rounded-full px-0 hover:bg-muted bg-transparent border-transparent"
+              menuClassName="bg-card border-border shadow-lg"
+              align="right"
+              items={menuItems}
+            />
+          </div>
+        )}
+      </div>
+
+      {review.content && (
+        <div className="mt-1">
+          <p className="body-text text-sm">
+            {preview}
+          </p>
+        </div>
+      )}
+
+      <div className="mt-auto pt-4 border-t border-border flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
+          <CalendarDays className="h-3.5 w-3.5 opacity-70" />
+          <span>{formatReviewDate(review.date)}</span>
+        </div>
+        <span className="text-[10px] uppercase tracking-widest text-muted-foreground opacity-50 font-bold">
+          Updated {formatReviewDate(lastUpdated)}
+        </span>
+      </div>
+    </article>
   );
 });
 

@@ -1,71 +1,85 @@
-import { AlertCircle, BookOpen, RefreshCw, SearchX } from "lucide-react";
+import { AlertCircle, BookOpen, SearchX } from "lucide-react";
 
-import BookCard from "@/components/books/BookCard";
 import EmptyState from "@/components/common/EmptyState";
 import Loader from "@/components/common/Loader";
+import MediaCard from "@/components/common/MediaCard";
 import { SearchResultsSkeleton } from "@/components/common/Skeleton";
-import { Button } from "@/components/ui/button";
 import { EXTERNAL_ERROR_KIND } from "@/utils/externalApiErrors";
 
 function BookResults({ results, loading, error, errorKind, hasQuery, onRetry, onSelect, onFavorite, hasMore, onLoadMore }) {
   if (!hasQuery) {
     return (
-      <EmptyState
-        icon={BookOpen}
-        title="Search for a book"
-        description="Enter a title or author to find books from Open Library and pre-fill your review."
-      />
+      <div className="py-12">
+        <EmptyState
+          icon={BookOpen}
+          title="Search for a book"
+          description="Enter a title or author to search the catalog and log your review."
+        />
+      </div>
     );
   }
 
   if (loading) {
     return (
       <div className="space-y-4">
-        <Loader label="Searching Open Library..." />
-        <SearchResultsSkeleton />
+        <Loader label="Searching catalog..." />
+        <SearchResultsSkeleton count={8} />
       </div>
     );
   }
 
   if (error) {
     const isEmpty = errorKind === EXTERNAL_ERROR_KIND.EMPTY;
-
     return (
-      <EmptyState
-        icon={isEmpty ? SearchX : AlertCircle}
-        title={isEmpty ? "No books found" : "Search failed"}
-        description={error}
-        actionLabel={isEmpty ? undefined : "Retry"}
-        onAction={isEmpty ? undefined : onRetry}
-      />
+      <div className="py-12">
+        <EmptyState
+          icon={isEmpty ? SearchX : AlertCircle}
+          title={isEmpty ? "No books found" : "Search failed"}
+          description={error}
+          actionLabel={isEmpty ? undefined : "Retry search"}
+          onAction={isEmpty ? undefined : onRetry}
+        />
+      </div>
     );
   }
 
   if (results.length === 0) {
     return (
-      <EmptyState
-        icon={SearchX}
-        title="No books found"
-        description="Try another title or author name."
-      />
+      <div className="py-12">
+        <EmptyState
+          icon={SearchX}
+          title="No books found"
+          description="Try adjusting your search terms."
+        />
+      </div>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-sm text-slate-500">{results.length} result{results.length === 1 ? "" : "s"} found</p>
-        <Button type="button" variant="outline" className="rounded-2xl px-4" onClick={onRetry}>
-          <RefreshCw className="h-4 w-4" />
-          Refresh
-        </Button>
+        <p className="text-sm font-semibold text-muted-foreground">{results.length} result{results.length === 1 ? "" : "s"} found</p>
       </div>
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-5">
         {results.map((book) => (
-          <BookCard key={book.id ?? book.openLibraryKey} book={book} onSelect={onSelect} onFavorite={onFavorite} />
+          <MediaCard 
+            key={book.id ?? book.openLibraryKey} 
+            item={book} 
+            type="book" 
+            onSelect={onSelect} 
+            onFavorite={onFavorite} 
+          />
         ))}
       </div>
-      {hasMore ? <Button type="button" variant="outline" className="w-full rounded-2xl" onClick={onLoadMore}>Load more books</Button> : null}
+      
+      {hasMore && (
+        <div className="flex justify-center pt-6">
+          <button type="button" className="btn btn-outline px-8" onClick={onLoadMore}>
+            Load more results
+          </button>
+        </div>
+      )}
     </div>
   );
 }

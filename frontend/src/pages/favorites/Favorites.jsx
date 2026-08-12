@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import DashboardCard from "@/components/common/DashboardCard";
 import EmptyState from "@/components/common/EmptyState";
-import { Button } from "@/components/ui/button";
+import MediaCard from "@/components/common/MediaCard";
+import { SearchResultsSkeleton } from "@/components/common/Skeleton";
 import { getFavorites, removeFavorite } from "@/services/favoriteService";
 import { useToast } from "@/hooks/useToast";
 import { getFriendlyApiError } from "@/utils/apiErrors";
@@ -11,12 +11,15 @@ import { getFriendlyApiError } from "@/utils/apiErrors";
 function Favorites() {
   const [favorites, setFavorites] = useState([]);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
   const { showToast } = useToast();
   const navigate = useNavigate();
 
   useEffect(() => {
     getFavorites()
-      .then(setFavorites)
+      .then((data) => {
+        setFavorites(data || []);
+      })
       .catch((caughtError) => {
         setFavorites([]);
         const message = getFriendlyApiError(caughtError);
@@ -26,17 +29,18 @@ function Favorites() {
           title: "Failed to load favorites",
           description: message,
         });
-      });
+      })
+      .finally(() => setLoading(false));
   }, [showToast]);
 
-  async function remove(id) {
+  async function remove(item) {
     try {
-      await removeFavorite(id);
-      setFavorites((items) => items.filter((item) => item.id !== id));
+      await removeFavorite(item.id);
+      setFavorites((items) => items.filter((i) => i.id !== item.id));
       showToast({
         tone: "success",
         title: "Favorite removed",
-        description: "The item has been removed from your favorites.",
+        description: "The item has been removed from your vault.",
       });
     } catch (caughtError) {
       showToast({
@@ -47,57 +51,78 @@ function Favorites() {
     }
   }
 
+  // Format helper for MediaCard
+  const toMediaItem = (item) => ({
+    id: item.item_id,
+    title: item.title,
+    posterUrl: item.item_type === "movie" ? item.image : null,
+    coverUrl: item.item_type === "book" ? item.image : null,
+    releaseDate: item.metadata?.releaseDate,
+    firstPublishYear: item.metadata?.firstPublishYear,
+    author: item.metadata?.author,
+    averageRating: item.metadata?.averageRating,
+    overview: item.metadata?.overview,
+  });
+
   return (
-    <DashboardCard title="Favorites" description="Books and movies saved to revisit or review later.">
+    <div className="space-y-6 pb-10">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div>
+          <h1 className="page-title mb-1">Your Favorites Vault</h1>
+          <p className="body-text">
+            A private collection of the stories and films you love most.
+          </p>
+        </div>
+      </div>
+
       {error ? (
-        <div className="mb-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+        <div className="rounded-lg border border-destructive bg-[#fce8e8] p-4 text-sm text-destructive font-semibold">
           {error}
         </div>
       ) : null}
-      {favorites.length === 0 ? (
-        <EmptyState icon={Heart} title="No favorites yet" description="Save an item while browsing books or movies." />
+
+      {loading ? (
+        <div className="py-8">
+          <SearchResultsSkeleton count={8} />
+        </div>
+      ) : favorites.length === 0 ? (
+        <div className="py-16">
+          <EmptyState 
+            icon={Heart} 
+            title="Your vault is empty" 
+            description="Save movies or books while browsing to build your personal collection."
+            actionLabel="Discover Media"
+            onAction={() => navigate("/dashboard")}
+          />
+        </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-5 mt-8">
           {favorites.map((item) => (
-            <article key={item.id} className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
-              <div className="flex gap-3">
-                <div className="h-20 w-14 overflow-hidden rounded-xl bg-slate-200">
-                  {item.image ? <img src={item.image} alt="" className="h-full w-full object-cover" loading="lazy" /> : null}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs font-medium uppercase text-slate-500">{item.item_type}</p>
-                  <h3 className="font-semibold text-slate-950">{item.title}</h3>
-                  <div className="mt-3 flex gap-2">
-                    <Button
-                      size="sm"
-                      onClick={() =>
-                        navigate(
-                          `/reviews/new?item=${encodeURIComponent(
-                            JSON.stringify({
-                              type: item.item_type,
-                              id: item.item_id,
-                              source: item.external_source,
-                              title: item.title,
-                              image: item.image,
-                              metadata: item.metadata,
-                            })
-                          )}`
-                        )
-                      }
-                    >
-                      Review
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => remove(item.id)}>
-                      Remove
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </article>
+            <MediaCard
+              key={item.id}
+              item={toMediaItem(item)}
+              type={item.item_type}
+              isFavorite={true}
+              onFavorite={() => remove(item)}
+              onSelect={() =>
+                navigate(
+                  `/reviews/new?item=${encodeURIComponent(
+                    JSON.stringify({
+                      type: item.item_type,
+                      id: item.item_id,
+                      source: item.external_source,
+                      title: item.title,
+                      image: item.image,
+                      metadata: item.metadata,
+                    })
+                  )}`
+                )
+              }
+            />
           ))}
         </div>
       )}
-    </DashboardCard>
+    </div>
   );
 }
 

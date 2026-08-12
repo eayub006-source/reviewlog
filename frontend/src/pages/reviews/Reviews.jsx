@@ -1,31 +1,29 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { PlusCircle } from "lucide-react";
+import { SearchX, LayoutGrid, List } from "lucide-react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
-import Badge from "@/components/common/Badge";
 import ConfirmDialog from "@/components/common/ConfirmDialog";
 import EmptyState from "@/components/common/EmptyState";
 import Pagination from "@/components/common/Pagination";
 import ReviewCard from "@/components/common/ReviewCard";
 import SearchBar from "@/components/common/SearchBar";
 import { ReviewListSkeleton } from "@/components/common/Skeleton";
-import { Button } from "@/components/ui/button";
-import DashboardCard from "@/components/common/DashboardCard";
 import { useReviews } from "@/hooks/useReviews";
 import { useToast } from "@/hooks/useToast";
 import { getFriendlyApiError } from "@/utils/apiErrors";
-import { Select } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 
-const PAGE_SIZE = 6;
+const PAGE_SIZE = 12;
 
 function Reviews() {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { reviews, loading, error, deleteReview, refreshReviews } = useReviews({ scope: "mine" });
+  const { reviews, loading, deleteReview, refreshReviews } = useReviews({ scope: "mine" });
   const { showToast } = useToast();
+  
   const [deleteTarget, setDeleteTarget] = useState(null);
-  const [actionError, setActionError] = useState("");
+  const [viewMode, setViewMode] = useState("list"); // "grid" or "list"
 
   const query = searchParams.get("q") ?? "";
   const visibility = searchParams.get("visibility") ?? "all";
@@ -100,9 +98,7 @@ function Reviews() {
   );
 
   const handleDelete = useCallback(async () => {
-    if (!deleteTarget) {
-      return;
-    }
+    if (!deleteTarget) return;
 
     try {
       await deleteReview(deleteTarget.id);
@@ -114,7 +110,6 @@ function Reviews() {
         description: "The selected review was removed successfully.",
       });
     } catch (caughtError) {
-      setActionError(getFriendlyApiError(caughtError));
       showToast({
         tone: "error",
         title: "Delete failed",
@@ -128,78 +123,127 @@ function Reviews() {
   }
 
   return (
-    <div className="space-y-6">
-      <DashboardCard title="My Reviews" description="Search, filter, sort, and manage your private review entries.">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <SearchBar value={query} onChange={(event) => handleParams({ q: event.target.value, page: 1 })} className="w-full lg:max-w-md" />
-          <div className="flex flex-wrap items-center gap-2">
+    <div className="space-y-6 pb-10">
+      
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div>
+          <h1 className="page-title mb-1">My Journal</h1>
+          <p className="body-text">
+            Explore and manage your personal reviews collection.
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <button className="btn btn-primary" onClick={() => navigate("/reviews/new")}>
+            Write Review
+          </button>
+        </div>
+      </div>
+
+      {/* Filter and View Bar */}
+      <div className="surface-panel p-4 md:px-6 rounded-2xl flex flex-col lg:flex-row gap-4 lg:items-center justify-between">
+        <div className="flex-1 max-w-lg">
+          <SearchBar 
+            value={query} 
+            onChange={(event) => handleParams({ q: event.target.value, page: 1 })} 
+            placeholder="Search your reviews..." 
+          />
+        </div>
+
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="flex items-center gap-1.5 p-1 bg-muted rounded-lg">
             {[
               { key: "all", label: "All" },
               { key: "public", label: "Public" },
               { key: "private", label: "Private" },
             ].map((item) => (
-              <Button
+              <button
                 key={item.key}
-                variant={visibility === item.key ? "default" : "outline"}
-                size="sm"
-                className="h-9 rounded-full px-4"
                 onClick={() => handleParams({ visibility: item.key, page: 1 })}
+                className={cn(
+                  "px-4 py-1.5 rounded-md text-sm font-semibold transition-colors",
+                  visibility === item.key 
+                    ? "bg-card text-foreground shadow-sm border border-border" 
+                    : "text-muted-foreground hover:text-foreground"
+                )}
               >
                 {item.label}
-              </Button>
+              </button>
             ))}
-            <Select
+          </div>
+
+          <div className="flex items-center gap-2">
+            <select
+              className="field h-[38px] py-1 pl-3 pr-8 appearance-none bg-muted text-sm font-semibold cursor-pointer border-transparent hover:border-border"
               value={sort}
-              onChange={(event) => handleParams({ sort: event.target.value, page: 1 })}
+              onChange={(e) => handleParams({ sort: e.target.value, page: 1 })}
             >
-              <option value="newest">Newest</option>
-              <option value="oldest">Oldest</option>
-              <option value="highest">Highest Rating</option>
-              <option value="lowest">Lowest Rating</option>
-            </Select>
-            <Button className="h-9 rounded-full px-4" onClick={() => navigate("/reviews/new") }>
-              <PlusCircle className="h-4 w-4" />
-              Create Review
-            </Button>
+              <option value="newest">Newest First</option>
+              <option value="oldest">Oldest First</option>
+              <option value="highest">Highest Rated</option>
+              <option value="lowest">Lowest Rated</option>
+            </select>
+          </div>
+
+          <div className="hidden sm:flex items-center border-l border-border pl-4 gap-2">
+            <button
+              onClick={() => setViewMode("grid")}
+              className={cn("p-1.5 rounded-md transition-colors", viewMode === "grid" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted")}
+            >
+              <LayoutGrid className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setViewMode("list")}
+              className={cn("p-1.5 rounded-md transition-colors", viewMode === "list" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted")}
+            >
+              <List className="w-4 h-4" />
+            </button>
           </div>
         </div>
+      </div>
 
-        <div className="mt-4 flex flex-wrap gap-2 text-sm text-slate-600">
-          <Badge tone="subtle">Sort: {sort}</Badge>
-          <Badge tone="subtle">Page {currentPage}</Badge>
-          <Badge tone="subtle">{filteredReviews.length} results</Badge>
-        </div>
-      </DashboardCard>
-
-      {error ? <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div> : null}
-      {actionError ? <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{actionError}</div> : null}
-
+      {/* Feed Content */}
       {pageReviews.length === 0 ? (
-        <EmptyState
-          title="No reviews found"
-          description="Your filters returned no reviews. Reset filters or create a new review to get started."
-          actionLabel="Create Review"
-          onAction={() => navigate("/reviews/new")}
-        />
+        <div className="py-16">
+          <EmptyState
+            icon={SearchX}
+            title={query || visibility !== "all" ? "No matches found" : "Your journal is empty"}
+            description={
+              query || visibility !== "all"
+                ? "Try adjusting your filters or search term."
+                : "You haven't written any reviews yet."
+            }
+            actionLabel={query || visibility !== "all" ? "Clear Filters" : "Write a Review"}
+            onAction={() => (query || visibility !== "all" ? handleParams({ q: "", visibility: "all", sort: "newest", page: 1 }) : navigate("/reviews/new"))}
+          />
+        </div>
       ) : (
-        <div className="grid gap-4">
+        <div className={viewMode === "grid" ? "grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "flex flex-col gap-4 max-w-4xl mx-auto"}>
           {pageReviews.map((review) => (
             <ReviewCard
               key={review.id}
               review={review}
-              onEdit={() => navigate(`/reviews/${review.id}/edit`)}
-              onDelete={() => setDeleteTarget(review)}
+              onEdit={(target) => navigate(`/reviews/${target.id}/edit`)}
+              onDelete={setDeleteTarget}
             />
           ))}
         </div>
       )}
 
-      <Pagination page={currentPage} totalPages={totalPages} onPageChange={(nextPage) => handleParams({ page: nextPage })} />
+      {totalPages > 1 && (
+        <div className="pt-8 flex justify-center">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={(nextPage) => handleParams({ page: nextPage })}
+          />
+        </div>
+      )}
 
       <ConfirmDialog
         open={Boolean(deleteTarget)}
-        title="Delete review?"
-        description={`This will permanently delete ${deleteTarget?.title ?? "this review"}. This action cannot be undone.`}
+        title="Delete Review"
+        description={`Are you sure you want to delete your review of ${deleteTarget?.title ?? "this review"}? This action cannot be undone.`}
         confirmLabel="Delete review"
         onConfirm={handleDelete}
         onCancel={() => setDeleteTarget(null)}

@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 
 function Skeleton({ className = "" }) {
-  return <div className={cn("animate-pulse rounded-2xl bg-slate-200/80", className)} />;
+  return <div className={cn("animate-pulse rounded-2xl bg-white/5 border border-white/5", className)} />;
 }
 
 export function DashboardSkeleton() {
@@ -12,7 +12,7 @@ export function DashboardSkeleton() {
         <Skeleton className="mt-4 h-9 w-72" />
         <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {Array.from({ length: 4 }).map((_, index) => (
-            <div key={index} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div key={index} className="rounded-2xl border border-white/5 bg-slate-900/40 p-5 shadow-lg">
               <Skeleton className="h-4 w-24" />
               <Skeleton className="mt-4 h-8 w-16" />
               <Skeleton className="mt-6 h-10 w-10 rounded-2xl" />
@@ -25,7 +25,7 @@ export function DashboardSkeleton() {
           <Skeleton className="h-5 w-28" />
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
             {Array.from({ length: 4 }).map((_, index) => (
-              <div key={index} className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+              <div key={index} className="rounded-2xl border border-white/5 bg-slate-900/30 p-4">
                 <Skeleton className="h-10 w-10 rounded-2xl" />
                 <Skeleton className="mt-4 h-4 w-28" />
                 <Skeleton className="mt-2 h-3 w-full" />
@@ -37,7 +37,7 @@ export function DashboardSkeleton() {
           <Skeleton className="h-5 w-28" />
           <div className="mt-5 space-y-3">
             {Array.from({ length: 4 }).map((_, index) => (
-              <div key={index} className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+              <div key={index} className="flex items-center justify-between rounded-xl border border-white/5 bg-slate-900/30 px-4 py-3">
                 <Skeleton className="h-4 w-28" />
                 <Skeleton className="h-4 w-16" />
               </div>
@@ -90,8 +90,8 @@ export function ProfileSkeleton() {
       <div className="surface-card p-6">
         <Skeleton className="h-5 w-32" />
         <Skeleton className="mt-3 h-8 w-60" />
-        <div className="mt-5 flex items-start gap-4 rounded-3xl border border-slate-200 bg-white p-5">
-          <Skeleton className="h-16 w-16 rounded-[1.5rem]" />
+        <div className="mt-5 flex items-start gap-4 rounded-2xl border border-white/5 bg-slate-900/40 p-5">
+          <Skeleton className="h-16 w-16 rounded-xl" />
           <div className="flex-1 space-y-2">
             <Skeleton className="h-4 w-24" />
             <Skeleton className="h-7 w-48" />
@@ -100,7 +100,7 @@ export function ProfileSkeleton() {
         </div>
         <div className="mt-5 space-y-3">
           {Array.from({ length: 4 }).map((_, index) => (
-            <div key={index} className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+            <div key={index} className="flex items-center justify-between rounded-xl border border-white/5 bg-slate-900/30 px-4 py-3">
               <Skeleton className="h-4 w-24" />
               <Skeleton className="h-4 w-24" />
             </div>
@@ -110,8 +110,8 @@ export function ProfileSkeleton() {
       <div className="surface-card p-6">
         <Skeleton className="h-5 w-32" />
         <Skeleton className="mt-3 h-4 w-48" />
-        <Skeleton className="mt-5 h-48 w-full rounded-[1.75rem]" />
-        <Skeleton className="mt-5 h-11 w-36 rounded-2xl" />
+        <Skeleton className="mt-5 h-48 w-full rounded-2xl" />
+        <Skeleton className="mt-5 h-11 w-36 rounded-xl" />
       </div>
     </div>
   );
@@ -139,7 +139,7 @@ export function SearchResultsSkeleton({ count = 6 }) {
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {Array.from({ length: count }).map((_, index) => (
         <div key={index} className="surface-card flex gap-4 p-4">
-          <Skeleton className="h-28 w-20 shrink-0 rounded-2xl" />
+          <Skeleton className="h-28 w-20 shrink-0 rounded-xl" />
           <div className="flex-1 space-y-2">
             <Skeleton className="h-5 w-3/4" />
             <Skeleton className="h-4 w-1/2" />

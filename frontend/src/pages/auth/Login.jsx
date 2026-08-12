@@ -1,12 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { LoaderCircle, LockKeyhole, Mail } from "lucide-react";
+import { LoaderCircle, KeyRound, Mail } from "lucide-react";
 
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/useToast";
 import { getFriendlyApiError } from "@/utils/apiErrors";
@@ -38,21 +33,17 @@ function Login() {
 
   function validate() {
     const nextErrors = {};
-
     if (!formData.username.trim()) {
       nextErrors.username = "Username is required.";
     }
-
     if (!formData.password.trim()) {
       nextErrors.password = "Password is required.";
     }
-
     return nextErrors;
   }
 
   async function handleSubmit(event) {
     event.preventDefault();
-
     const validationErrors = validate();
     setErrors(validationErrors);
     setError("");
@@ -69,13 +60,12 @@ function Login() {
     }
 
     setSubmitting(true);
-
     try {
       await login(formData);
       showToast({
         tone: "success",
-        title: "Login successful",
-        description: "Welcome back to ReviewLog.",
+        title: "Welcome back",
+        description: "Your session has started securely.",
       });
       navigate("/dashboard", { replace: true });
     } catch (caughtError) {
@@ -96,74 +86,79 @@ function Login() {
   }
 
   return (
-    <Card className="border-white/70 bg-white/90 shadow-[0_24px_80px_rgba(15,23,42,0.12)] backdrop-blur">
-      <CardHeader className="space-y-3">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-950 text-white shadow-lg shadow-slate-950/15">
-          <LockKeyhole className="h-5 w-5" />
-        </div>
-        <CardDescription>Welcome back</CardDescription>
-        <CardTitle>Sign in to ReviewLog</CardTitle>
-        <p className="text-sm leading-6 text-slate-600">
-          Use your account to access dashboard, profile, review, and settings routes.
+    <div className="surface-card p-8 md:p-10 w-full relative overflow-hidden">
+      <div className="mb-8">
+        <h2 className="card-title text-2xl mb-2">Welcome back</h2>
+        <p className="body-text text-sm">
+          Please sign in to access your private library.
         </p>
-      </CardHeader>
+      </div>
 
-      <CardContent>
-        <form className="space-y-5" onSubmit={handleSubmit} noValidate>
-          <div className="space-y-2">
-            <Label htmlFor="username">Username</Label>
-            <div className="relative">
-              <Mail className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-              <Input
-                id="username"
-                name="username"
-                placeholder="Enter username"
-                autoComplete="username"
-                className="pl-11"
-                value={formData.username}
-                onChange={handleChange}
-                aria-invalid={Boolean(errors.username)}
-              />
-            </div>
-            {errors.username ? <p className="text-sm text-red-600">{errors.username}</p> : null}
+      <form className="space-y-6" onSubmit={handleSubmit} noValidate>
+        <div className="space-y-2">
+          <label htmlFor="username" className="block text-sm font-semibold text-foreground">
+            Username
+          </label>
+          <div className="relative">
+            <Mail className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground opacity-70" />
+            <input
+              id="username"
+              name="username"
+              placeholder="Enter your username"
+              autoComplete="username"
+              className={`field pl-11 ${errors.username ? "border-destructive focus:border-destructive focus:ring-destructive/20" : ""}`}
+              value={formData.username}
+              onChange={handleChange}
+              aria-invalid={Boolean(errors.username)}
+            />
           </div>
+          {errors.username && <p className="text-sm text-destructive mt-1">{errors.username}</p>}
+        </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
+        <div className="space-y-2">
+          <label htmlFor="password" className="block text-sm font-semibold text-foreground">
+            Password
+          </label>
+          <div className="relative">
+            <KeyRound className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground opacity-70" />
+            <input
               id="password"
               name="password"
               type="password"
-              placeholder="Enter password"
+              placeholder="Enter your password"
               autoComplete="current-password"
+              className={`field pl-11 ${errors.password ? "border-destructive focus:border-destructive focus:ring-destructive/20" : ""}`}
               value={formData.password}
               onChange={handleChange}
               aria-invalid={Boolean(errors.password)}
             />
-            {errors.password ? <p className="text-sm text-red-600">{errors.password}</p> : null}
           </div>
+          {errors.password && <p className="text-sm text-destructive mt-1">{errors.password}</p>}
+        </div>
 
-          {error ? (
-            <Alert variant="destructive">
-              <AlertTitle>Authentication failed</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          ) : null}
+        {error && (
+          <div className="rounded-lg border border-destructive bg-[#fce8e8] p-3">
+            <p className="text-sm text-destructive font-medium">{error}</p>
+          </div>
+        )}
 
-          <Button type="submit" className="h-11 w-full rounded-2xl" disabled={submitting || authLoading}>
-            {submitting || authLoading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
-            {submitting || authLoading ? "Signing in..." : "Login"}
-          </Button>
-        </form>
+        <button 
+          type="submit" 
+          className="btn btn-secondary w-full" 
+          disabled={submitting || authLoading}
+        >
+          {submitting || authLoading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
+          {submitting || authLoading ? "Signing in..." : "Login to your vault"}
+        </button>
+      </form>
 
-        <p className="mt-6 text-center text-sm text-slate-600">
-          New to ReviewLog?{" "}
-          <Link to="/register" className="font-medium text-slate-950 underline-offset-4 hover:underline">
-            Create an account
-          </Link>
-        </p>
-      </CardContent>
-    </Card>
+      <p className="mt-8 text-center text-sm text-muted-foreground font-sans">
+        New to ReviewLog?{" "}
+        <Link to="/register" className="font-semibold text-secondary hover:text-[#c96c53] transition-colors">
+          Create an account
+        </Link>
+      </p>
+    </div>
   );
 }
 

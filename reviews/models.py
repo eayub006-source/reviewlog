@@ -3,6 +3,28 @@ from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
+    bio = models.TextField(blank=True, default="")
+    avatar_data = models.TextField(blank=True, default="")  # base64 data URL
+
+    def __str__(self):
+        return f"{self.user.username}'s Profile"
+
+
+class UserSettings(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="settings")
+    language = models.CharField(max_length=50, default="en-US")
+    country = models.CharField(max_length=50, default="Pakistan")
+    timezone = models.CharField(max_length=50, default="Asia/Karachi")
+    adult_content = models.BooleanField(default=False)
+    filter_profanity = models.BooleanField(default=True)
+    keyboard_shortcuts = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.user.username}'s Settings"
+
+
 class Review(models.Model):
     ITEM_TYPE_CHOICES = [("internal_review", "Internal review"), ("book", "Book"), ("movie", "Movie")]
     EXTERNAL_SOURCE_CHOICES = [("", "None"), ("openlibrary", "Open Library"), ("tmdb", "TMDB")]

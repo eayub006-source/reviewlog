@@ -1,5 +1,4 @@
 import MovieSearch from "@/components/movies/MovieSearch";
-import DashboardCard from "@/components/common/DashboardCard";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { saveFavorite, saveRecentItem } from "@/services/favoriteService";
 import { useToast } from "@/hooks/useToast";
@@ -58,16 +57,22 @@ function MovieSearchPage() {
   };
 
   return (
-    <DashboardCard
-      title="Search Movies"
-      description="Find a movie on TMDB and use it to pre-fill your review."
-    >
-      <MovieSearch
-        initialQuery={searchParams.get("q") || ""}
-        onSelect={handleSelect}
-        onFavorite={handleFavorite}
-      />
-    </DashboardCard>
+    <div className="space-y-6 pb-10">
+      <div>
+        <h1 className="page-title mb-1">Movie Discovery</h1>
+        <p className="body-text max-w-2xl">
+          Search the catalog to discover films and log your cinematic journey.
+        </p>
+      </div>
+
+      <div className="surface-panel p-6 md:p-8">
+        <MovieSearch
+          initialQuery={searchParams.get("q") || ""}
+          onSelect={handleSelect}
+          onFavorite={handleFavorite}
+        />
+      </div>
+    </div>
   );
 }
 

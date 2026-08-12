@@ -87,6 +87,7 @@ The Django backend is organized into modular components:
 
 ## Project Structure
 
+```text
 reviewlog/
 ├── frontend/
 │   ├── src/
@@ -100,6 +101,7 @@ reviewlog/
 │   │   ├── services/
 │   │   └── utils/
 │   └── package.json
+│
 ├── reviews/
 │   ├── migrations/
 │   ├── serializers/
@@ -107,11 +109,14 @@ reviewlog/
 │   ├── views/
 │   ├── models.py
 │   └── urls.py
+│
 ├── reviewlog_backend/
 │   ├── settings.py
 │   └── urls.py
+│
 ├── manage.py
 └── requirements.txt
+```
 
 ## Major API Endpoints
 

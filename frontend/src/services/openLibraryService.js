@@ -29,3 +29,8 @@ export function buildBookReviewTitle(book) {
 
   return `${book.title} by ${book.author}${yearSuffix}`;
 }
+
+export async function getPopularBooks() {
+  const response = await api.get("catalog/recommendations/books/");
+  return response.data;
+}

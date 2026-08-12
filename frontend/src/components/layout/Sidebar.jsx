@@ -39,7 +39,7 @@ function Sidebar({ open = false, onClose, onLogout, currentUser }) {
             <p className="mt-1 text-lg font-semibold">{currentUser?.username ?? "Account"}</p>
           </div>
         </div>
-        <p className="mt-3 text-sm text-slate-300">{currentUser?.email ?? "Connected to Render API"}</p>
+        <p className="mt-3 text-sm text-slate-300">{currentUser?.email ?? "ReviewLog User"}</p>
       </div>
 
       <nav className="mt-6 space-y-1">

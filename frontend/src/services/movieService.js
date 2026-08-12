@@ -28,3 +28,8 @@ export function buildMovieReviewTitle(movie) {
 
   return year ? `${movie.title} (${year})` : movie.title;
 }
+
+export async function getTrendingMovies() {
+  const response = await api.get("catalog/recommendations/movies/");
+  return response.data;
+}

@@ -6,15 +6,55 @@ import MediaCard from "@/components/common/MediaCard";
 import { SearchResultsSkeleton } from "@/components/common/Skeleton";
 import { EXTERNAL_ERROR_KIND } from "@/utils/externalApiErrors";
 
-function BookResults({ results, loading, error, errorKind, hasQuery, onRetry, onSelect, onFavorite, hasMore, onLoadMore }) {
+function BookResults({ results, loading, error, errorKind, hasQuery, onRetry, onSelect, onFavorite, hasMore, onLoadMore, recommended = [], recLoading = false }) {
   if (!hasQuery) {
     return (
-      <div className="py-12">
-        <EmptyState
-          icon={BookOpen}
-          title="Search for a book"
-          description="Enter a title or author to search the catalog and log your review."
-        />
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-xl font-heading font-bold text-foreground">Recommended Books</h2>
+          <p className="body-text text-sm">Popular and trending books in our catalog today.</p>
+        </div>
+        {recLoading ? (
+          <SearchResultsSkeleton count={6} />
+        ) : recommended && recommended.length > 0 ? (
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-5">
+            {recommended.map((book) => (
+              <MediaCard 
+                key={book.id} 
+                item={{
+                  id: book.id,
+                  title: book.title,
+                  coverUrl: book.image,
+                  firstPublishYear: book.firstPublishYear,
+                  author: book.author,
+                }} 
+                type="book" 
+                onSelect={(b) => onSelect({
+                  id: b.id,
+                  title: b.title,
+                  coverUrl: b.coverUrl,
+                  firstPublishYear: b.firstPublishYear,
+                  author: b.author,
+                })} 
+                onFavorite={(b) => onFavorite({
+                  id: b.id,
+                  title: b.title,
+                  coverUrl: b.coverUrl,
+                  firstPublishYear: b.firstPublishYear,
+                  author: b.author,
+                })} 
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="py-12">
+            <EmptyState
+              icon={BookOpen}
+              title="Search for a book"
+              description="Enter a title or author to search the catalog and log your review."
+            />
+          </div>
+        )}
       </div>
     );
   }

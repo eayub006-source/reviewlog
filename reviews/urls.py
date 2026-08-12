@@ -9,6 +9,7 @@ from .views import (
     CatalogItemListCreateView,
     CatalogItemDeleteView,
     DashboardStatsView,
+    CatalogRecommendationView,
 )
 
 router = DefaultRouter()
@@ -18,6 +19,7 @@ urlpatterns = [
     path("register/", RegisterView.as_view(), name="register"),
     path("profile/", ProfileView.as_view(), name="profile"),
     path("public-reviews/", PublicReviewList.as_view(), name="public-reviews"),
+    path("catalog/recommendations/<str:item_type>/", CatalogRecommendationView.as_view(), name="catalog-recommendations"),
     path("catalog/books/", CatalogSearchView.as_view(), {"item_type": "books"}, name="book-search"),
     path("catalog/movies/", CatalogSearchView.as_view(), {"item_type": "movies"}, name="movie-search"),
     path("favorites/", CatalogItemListCreateView.as_view(), {"action": "favorite"}, name="favorites"),

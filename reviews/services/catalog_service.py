@@ -61,3 +61,45 @@ def search_movies(query, page=1):
     data = {"results": results, "page": page, "has_more": page < payload.get("total_pages", 0)}
     cache.set(key, data, 300)
     return data
+
+
+def get_popular_books():
+    key = "catalog:popular:books"
+    cached = cache.get(key)
+    if cached is not None:
+        return cached
+    # Fetching popular fiction as a recommendation baseline
+    payload = _request_json("https://openlibrary.org/subjects/fiction.json?limit=12")
+    results = [{
+        "id": item.get("key", "").replace("/works/", ""), 
+        "title": item.get("title") or "Untitled",
+        "author": (item.get("authors") or [{"name": "Unknown author"}])[0].get("name"),
+        "authors": [a.get("name") for a in item.get("authors", [])],
+        "firstPublishYear": item.get("first_publish_year"),
+        "image": f"https://covers.openlibrary.org/b/id/{item['cover_id']}-M.jpg" if item.get("cover_id") else "",
+        "source": "openlibrary",
+    } for item in payload.get("works", [])]
+    data = {"results": results}
+    cache.set(key, data, 3600)  # Cache for 1 hour
+    return data
+
+
+def get_popular_movies():
+    api_key = os.environ.get("TMDB_API_KEY")
+    if not api_key:
+        raise ValidationError({"detail": "TMDB_API_KEY is not configured on the server."})
+    key = "catalog:popular:movies"
+    cached = cache.get(key)
+    if cached is not None:
+        return cached
+    payload = _request_json("https://api.themoviedb.org/3/movie/popular?" + urlencode({"api_key": api_key, "language": "en-US", "page": 1}))
+    results = [{
+        "id": str(item.get("id", "")), "title": item.get("title") or "Untitled",
+        "releaseDate": item.get("release_date") or "", "overview": item.get("overview") or "No overview available.",
+        "averageRating": item.get("vote_average"),
+        "image": f"https://image.tmdb.org/t/p/w342{item['poster_path']}" if item.get("poster_path") else "",
+        "source": "tmdb",
+    } for item in payload.get("results", [])]
+    data = {"results": results}
+    cache.set(key, data, 3600)  # Cache for 1 hour
+    return data

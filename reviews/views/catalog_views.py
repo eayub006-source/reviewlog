@@ -5,7 +5,16 @@ from rest_framework.views import APIView
 
 from ..models import CatalogItem, Review
 from ..serializers import CatalogItemSerializer
-from ..services.catalog_service import search_books, search_movies
+from ..services.catalog_service import search_books, search_movies, get_popular_books, get_popular_movies
+
+
+class CatalogRecommendationView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, item_type):
+        if item_type == "books":
+            return Response(get_popular_books())
+        return Response(get_popular_movies())
 
 
 class CatalogSearchView(APIView):

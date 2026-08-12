@@ -30,7 +30,7 @@ function ErrorPage({ code, title, description, icon: Icon = ShieldAlert, primary
         <div className="mt-8 flex flex-wrap items-center justify-center gap-2 text-xs font-medium text-slate-500">
           <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1">ReviewLog</span>
           <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1">React 19</span>
-          <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1">Render backend</span>
+          <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1">ReviewLog Server</span>
         </div>
       </section>
     </main>

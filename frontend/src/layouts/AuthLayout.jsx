@@ -1,6 +1,14 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, Navigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 
 function AuthLayout() {
+  const { isAuthenticated, isInitializing } = useAuth();
+
+  // If already authenticated, don't show login/register, go to dashboard
+  if (!isInitializing && isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   return (
     <main className="relative min-h-screen overflow-hidden bg-background text-foreground">
       {/* Editorial Decorative Elements */}

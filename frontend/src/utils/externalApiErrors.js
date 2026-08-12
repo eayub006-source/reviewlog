@@ -20,7 +20,7 @@ export function classifyExternalError(error, { emptyResults = false } = {}) {
   if (status === 401 || status === 403) {
     return {
       kind: EXTERNAL_ERROR_KIND.INVALID_API_KEY,
-      message: "The TMDB API key is invalid or missing. Check VITE_TMDB_API_KEY in your .env file.",
+      message: "The external catalog service rejected the request. The server API key may be invalid.",
     };
   }
 

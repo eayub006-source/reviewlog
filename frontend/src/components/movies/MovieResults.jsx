@@ -6,15 +6,58 @@ import MediaCard from "@/components/common/MediaCard";
 import { SearchResultsSkeleton } from "@/components/common/Skeleton";
 import { EXTERNAL_ERROR_KIND } from "@/utils/externalApiErrors";
 
-function MovieResults({ results, loading, error, errorKind, hasQuery, onRetry, onSelect, onFavorite, hasMore, onLoadMore }) {
+function MovieResults({ results, loading, error, errorKind, hasQuery, onRetry, onSelect, onFavorite, hasMore, onLoadMore, recommended = [], recLoading = false }) {
   if (!hasQuery) {
     return (
-      <div className="py-12">
-        <EmptyState
-          icon={Film}
-          title="Search for a movie"
-          description="Enter a title to search the catalog and log your review."
-        />
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-xl font-heading font-bold text-foreground">Recommended Movies</h2>
+          <p className="body-text text-sm">Trending and highly popular movies in the catalog today.</p>
+        </div>
+        {recLoading ? (
+          <SearchResultsSkeleton count={6} />
+        ) : recommended && recommended.length > 0 ? (
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-5">
+            {recommended.map((movie) => (
+              <MediaCard 
+                key={movie.id} 
+                item={{
+                  id: movie.id,
+                  title: movie.title,
+                  posterUrl: movie.image,
+                  releaseDate: movie.releaseDate,
+                  averageRating: movie.averageRating,
+                  overview: movie.overview,
+                }} 
+                type="movie" 
+                onSelect={(m) => onSelect({
+                  id: m.id,
+                  title: m.title,
+                  posterUrl: m.posterUrl,
+                  releaseDate: m.releaseDate,
+                  averageRating: m.averageRating,
+                  overview: m.overview,
+                })} 
+                onFavorite={(m) => onFavorite({
+                  id: m.id,
+                  title: m.title,
+                  posterUrl: m.posterUrl,
+                  releaseDate: m.releaseDate,
+                  averageRating: m.averageRating,
+                  overview: m.overview,
+                })} 
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="py-12">
+            <EmptyState
+              icon={Film}
+              title="Search for a movie"
+              description="Enter a title to search the catalog and log your review."
+            />
+          </div>
+        )}
       </div>
     );
   }

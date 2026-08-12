@@ -110,7 +110,7 @@ function Navbar({ currentUser, onLogout }) {
               className="flex items-center gap-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg"
               aria-label="ReviewLog Home"
             >
-              <span className="font-heading font-bold text-xl tracking-tight text-primary">
+              <span className="font-heading font-bold text-2xl tracking-tight text-primary">
                 ReviewLog
               </span>
             </button>
@@ -149,7 +149,7 @@ function Navbar({ currentUser, onLogout }) {
                     setSearchOverlayOpen(true);
                   }}
                   onKeyDown={submitGlobalSearch}
-                  placeholder="Search catalog (Enter)"
+                  placeholder="Search catalog"
                   ariaLabel="Search movies or books"
                 />
                 {searchOverlayOpen && globalQuery && (
@@ -263,7 +263,7 @@ function Navbar({ currentUser, onLogout }) {
           aria-label="Mobile Navigation"
         >
           <div className="flex h-16 items-center justify-between px-6 border-b border-border">
-            <span className="font-heading font-bold text-xl text-primary">
+            <span className="font-heading font-bold text-2xl text-primary">
               ReviewLog
             </span>
             <button

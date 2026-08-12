@@ -6,6 +6,8 @@ import { useProfile } from "@/hooks/useProfile";
 import { useReviews } from "@/hooks/useReviews";
 import { useToast } from "@/hooks/useToast";
 import { getFavorites, getRecentItems } from "@/services/favoriteService";
+import { getTrendingMovies } from "@/services/movieService";
+import { getPopularBooks } from "@/services/openLibraryService";
 import HeroBanner from "@/components/common/HeroBanner";
 import Carousel from "@/components/common/Carousel";
 import MediaCard from "@/components/common/MediaCard";
@@ -19,6 +21,8 @@ function Dashboard() {
   const { showToast } = useToast();
   const [catalog, setCatalog] = useState({ favorites: [], recent: [] });
   const [catalogLoading, setCatalogLoading] = useState(true);
+  const [recommendedMovies, setRecommendedMovies] = useState([]);
+  const [recommendedBooks, setRecommendedBooks] = useState([]);
 
   useEffect(() => {
     Promise.all([getFavorites(), getRecentItems()])
@@ -34,6 +38,42 @@ function Dashboard() {
       })
       .finally(() => setCatalogLoading(false));
   }, [showToast]);
+
+  useEffect(() => {
+    let mounted = true;
+    Promise.all([
+      getTrendingMovies().catch(() => ({ results: [] })),
+      getPopularBooks().catch(() => ({ results: [] }))
+    ])
+      .then(([moviesRes, booksRes]) => {
+        if (mounted) {
+          setRecommendedMovies(moviesRes.results || []);
+          setRecommendedBooks(booksRes.results || []);
+        }
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const handleRecommendSelect = (item, type) => {
+    const serialized = JSON.stringify({
+      type,
+      id: item.id,
+      source: item.source || (type === "movie" ? "tmdb" : "openlibrary"),
+      title: item.title,
+      image: item.image,
+      metadata: type === "movie" ? {
+        releaseDate: item.releaseDate,
+        averageRating: item.averageRating,
+        overview: item.overview
+      } : {
+        author: item.author,
+        firstPublishYear: item.firstPublishYear
+      }
+    });
+    navigate(`/reviews/new?item=${encodeURIComponent(serialized)}`);
+  };
 
   const stats = useMemo(() => {
     const totalReviews = reviews.length;
@@ -153,6 +193,51 @@ function Dashboard() {
                     metadata: item.metadata
                   })
                 )}`)}
+              />
+            </div>
+          ))}
+        </Carousel>
+      )}
+
+      {/* Recommended Movies Section */}
+      {recommendedMovies.length > 0 && (
+        <Carousel title="Recommended Movies" description="Trending films popular among the ReviewLog community.">
+          {recommendedMovies.map((item) => (
+            <div key={item.id} className="w-[160px] sm:w-[180px] shrink-0 snap-start">
+              <MediaCard
+                item={{
+                  id: item.id,
+                  title: item.title,
+                  posterUrl: item.image,
+                  releaseDate: item.releaseDate,
+                  averageRating: item.averageRating,
+                  overview: item.overview,
+                }}
+                type="movie"
+                showActions={true}
+                onSelect={() => handleRecommendSelect(item, "movie")}
+              />
+            </div>
+          ))}
+        </Carousel>
+      )}
+
+      {/* Recommended Books Section */}
+      {recommendedBooks.length > 0 && (
+        <Carousel title="Recommended Books" description="Popular literature recommended for your collection.">
+          {recommendedBooks.map((item) => (
+            <div key={item.id} className="w-[160px] sm:w-[180px] shrink-0 snap-start">
+              <MediaCard
+                item={{
+                  id: item.id,
+                  title: item.title,
+                  coverUrl: item.image,
+                  firstPublishYear: item.firstPublishYear,
+                  author: item.author,
+                }}
+                type="book"
+                showActions={true}
+                onSelect={() => handleRecommendSelect(item, "book")}
               />
             </div>
           ))}

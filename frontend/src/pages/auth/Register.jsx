@@ -133,7 +133,7 @@ function Register() {
               name="username"
               placeholder="Choose a username"
               autoComplete="username"
-              className={`field pl-11 ${errors.username ? "border-destructive focus:border-destructive focus:ring-destructive/20" : ""}`}
+              className={`field field-with-icon pl-11 ${errors.username ? "border-destructive focus:border-destructive focus:ring-destructive/20" : ""}`}
               value={formData.username}
               onChange={handleChange}
               aria-invalid={Boolean(errors.username)}
@@ -154,7 +154,7 @@ function Register() {
               type="email"
               placeholder="Enter your email"
               autoComplete="email"
-              className={`field pl-11 ${errors.email ? "border-destructive focus:border-destructive focus:ring-destructive/20" : ""}`}
+              className={`field field-with-icon pl-11 ${errors.email ? "border-destructive focus:border-destructive focus:ring-destructive/20" : ""}`}
               value={formData.email}
               onChange={handleChange}
               aria-invalid={Boolean(errors.email)}
@@ -175,7 +175,7 @@ function Register() {
               type="password"
               placeholder="Choose a password"
               autoComplete="new-password"
-              className={`field pl-11 ${errors.password ? "border-destructive focus:border-destructive focus:ring-destructive/20" : ""}`}
+              className={`field field-with-icon pl-11 ${errors.password ? "border-destructive focus:border-destructive focus:ring-destructive/20" : ""}`}
               value={formData.password}
               onChange={handleChange}
               aria-invalid={Boolean(errors.password)}
@@ -196,7 +196,7 @@ function Register() {
               type="password"
               placeholder="Confirm your password"
               autoComplete="new-password"
-              className={`field pl-11 ${errors.confirmPassword ? "border-destructive focus:border-destructive focus:ring-destructive/20" : ""}`}
+              className={`field field-with-icon pl-11 ${errors.confirmPassword ? "border-destructive focus:border-destructive focus:ring-destructive/20" : ""}`}
               value={formData.confirmPassword}
               onChange={handleChange}
               aria-invalid={Boolean(errors.confirmPassword)}

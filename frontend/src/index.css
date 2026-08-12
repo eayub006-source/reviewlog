@@ -134,6 +134,12 @@
   .field {
     @apply w-full rounded-lg border border-input bg-card px-4 py-2.5 text-base text-foreground outline-none transition-all duration-200 placeholder:text-muted-foreground focus:border-primary focus:ring-4 focus:ring-ring;
   }
+  .field-with-icon {
+    padding-left: 2.75rem !important;
+  }
+  .relative > svg ~ .field {
+    padding-left: 2.75rem !important;
+  }
   .surface-card {
     @apply rounded-xl border border-border bg-card shadow-sm;
   }

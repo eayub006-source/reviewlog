@@ -106,7 +106,7 @@ function Login() {
               name="username"
               placeholder="Enter your username"
               autoComplete="username"
-              className={`field pl-11 ${errors.username ? "border-destructive focus:border-destructive focus:ring-destructive/20" : ""}`}
+              className={`field field-with-icon pl-11 ${errors.username ? "border-destructive focus:border-destructive focus:ring-destructive/20" : ""}`}
               value={formData.username}
               onChange={handleChange}
               aria-invalid={Boolean(errors.username)}
@@ -127,7 +127,7 @@ function Login() {
               type="password"
               placeholder="Enter your password"
               autoComplete="current-password"
-              className={`field pl-11 ${errors.password ? "border-destructive focus:border-destructive focus:ring-destructive/20" : ""}`}
+              className={`field field-with-icon pl-11 ${errors.password ? "border-destructive focus:border-destructive focus:ring-destructive/20" : ""}`}
               value={formData.password}
               onChange={handleChange}
               aria-invalid={Boolean(errors.password)}

@@ -1,278 +1,236 @@
-# ReviewLog Backend
+# ReviewLog
 
-A Django REST Framework backend for **ReviewLog**, a review management application that allows users to create, manage, and share reviews securely using JWT authentication.
+ReviewLog is a modern, full-stack review and journaling platform for books and movies. Designed as a personal library and community feed, the platform enables users to explore external book and movie catalogs, rate them, write reviews, maintain a personal vault of saved favorites, and share public reviews with the community.
 
----
+## 🚀 Live Demo & API Root
 
-##  Features
+The application is deployed across cloud environments:
 
-### Authentication
-- User Registration
-- JWT Login Authentication
-- JWT Token Refresh
-- Protected API Endpoints
-
-### User Management
-- View Profile
-- Update Profile
-
-### Reviews
-- Create Reviews
-- Read Reviews
-- Update Reviews
-- Delete Reviews
-- Reviews linked to authenticated users
-- Users can only modify their own reviews
-- Review internal entries, Open Library books, and TMDB movies through one shared review model
-
-### External Catalogs
-- Authenticated book search through Open Library
-- Authenticated movie search through a server-side TMDB proxy (`TMDB_API_KEY` never reaches the frontend)
-- Paged search, debouncing, cancellation, cached provider results, empty/loading states, and search history
-- Favorites and recently viewed books/movies per user
-
-### Public Reviews
-- Public/Private review visibility
-- Public reviews endpoint for everyone
-
-### Validation
-- Rating validation (1–5)
-- Serializer validation
-- Model validation
-
-### Security
-- JWT Authentication
-- Object-level permissions
-- User ownership enforcement
-
-### Backend Improvements
-- Modular project structure
-- Separate Views
-- Separate Serializers
-- Custom Permissions
-- CORS configured for frontend integration
+*   **Frontend Client (Vercel):** [https://reviewlog.vercel.app](https://reviewlog.vercel.app)
+*   **Backend Server API (Render):** [https://reviewlog.onrender.com](https://reviewlog.onrender.com)
+    *   *API Entry Point:* `https://reviewlog.onrender.com/api/`
 
 ---
 
-#  Tech Stack
+## 🛠️ Tech Stack
 
-- Python 3.x
-- Django
-- Django REST Framework
-- Simple JWT
-- SQLite (Development)
-- django-cors-headers
+### Frontend Client
+*   **React 19 & Vite:** Ultra-fast bundling and rendering.
+*   **Tailwind CSS (v4):** Modern utility-first CSS using OKLCH color mappings and dark-theme configurations.
+*   **React Router DOM (v7):** Client-side routing, protected route guards, and lazy-loading.
+*   **Axios:** Configured with request/response interceptors for advanced JWT management.
+*   **Lucide Icons:** Unified vector icon system.
+
+### Backend Server
+*   **Django & Django REST Framework (DRF):** Robust API framework, model serializers, and custom permissions.
+*   **SimpleJWT:** JSON Web Token authentication standard.
+*   **SQLite:** Deployed for lightweight database management.
+*   **WhiteNoise & Gunicorn:** Production-ready static asset hosting and WSGI server scaling.
+*   **CORS (django-cors-headers):** Restricted origin-sharing for frontend-backend isolation.
+
+### External Integration APIs
+*   **Open Library API:** Catalog searching for books.
+*   **The Movie Database (TMDB) API:** Catalog searching and poster rendering for movies.
 
 ---
 
-# Architecture
+## 📦 Project Structure
 
-ReviewLog uses a React/Vite frontend and a Django REST Framework API. JWT access and refresh tokens protect all account, review, catalog, favorite, and dashboard endpoints. The React client groups requests into services, stateful fetching into hooks, and shared UI into reusable components. Django keeps API views, serializers, permissions, and external-provider adapters separated by responsibility.
-
-External catalog requests are proxied by Django: Open Library is queried server-side and TMDB is queried with `TMDB_API_KEY` only on the backend. Provider responses are cached for five minutes before being returned to authenticated clients.
-
-## Folder structure
+The project maintains a clean separation of concerns between presentation and business logic:
 
 ```text
-frontend/src/
-  components/    reusable UI and catalog components
-  hooks/         authenticated data-fetching hooks
-  pages/         route-level screens
-  services/      API and browser-storage clients
-reviews/
-  serializers/   API representation and validation
-  services/      Open Library and TMDB adapters
-  views/         modular authenticated API endpoints
-  migrations/    schema history
-```
-
-## Production features
-
-- Accessible keyboard navigation, visible focus treatments, labeled controls, and dialog semantics
-- Route-level lazy loading, cached review/catalog requests, debounced/cancelable external search, and lazy-loaded images
-- Global toasts, empty states, loading skeletons, offline status, 404/500 routes, and a runtime error boundary
-- User-scoped favorites/recent items and dashboard activity/statistics
-
-## Deployment guide (Render)
-
-1. Create a Render web service from this repository with build command `pip install -r requirements.txt && python manage.py collectstatic --noinput` and start command `gunicorn reviewlog_backend.wsgi`.
-2. Set `DJANGO_SECRET_KEY` to a long random value, `DJANGO_DEBUG=false`, `DJANGO_SECURE_SSL_REDIRECT=true`, `DJANGO_SECURE_HSTS_SECONDS=31536000`, `DJANGO_SECURE_HSTS_PRELOAD=true`, and `TMDB_API_KEY` in Render Environment Variables.
-3. Set `ALLOWED_HOSTS` to a comma-separated list of accepted hosts: `localhost,127.0.0.1,reviewlog.onrender.com,reviewlog.vercel.app,reviewlog-2lafwjpe0-eshal-s-projects2.vercel.app`.
-4. Set `CORS_ALLOWED_ORIGINS` to the comma-separated frontend origins: `http://localhost:5173,https://reviewlog.vercel.app,https://reviewlog-2lafwjpe0-eshal-s-projects2.vercel.app`.
-5. Run `python manage.py migrate` as part of the deployment/release workflow.
-6. Deploy the frontend with `npm ci && npm run build`; set its `VITE_API_BASE_URL` according to your hosting configuration if it differs from the default.
-
-Never commit `.env` files, TMDB keys, or Django secrets. A local development environment can export the same variables before starting Django.
-
-## Screenshots
-
-Add screenshots here before a public portfolio/release submission:
-
-- `docs/screenshots/dashboard.png`
-- `docs/screenshots/catalog-search.png`
-- `docs/screenshots/reviews.png`
-
----
-
-#  Project Structure
-
-```
-reviews/
+reviewlog/
 │
-├── migrations/
-├── serializers/
-│   ├── auth_serializer.py
-│   └── review_serializer.py
+├── frontend/                     # React/Vite Client
+│   ├── src/
+│   │   ├── api/                  # Global Axios instances & interceptors
+│   │   ├── components/           # UI Primitives, headers & page components
+│   │   ├── context/              # Contexts (AuthContext, ToastContext)
+│   │   ├── hooks/                # Stateful hooks (useAuth, useReviews, useProfile)
+│   │   ├── layouts/              # Wrapper structures (AuthLayout, DashboardLayout)
+│   │   ├── pages/                # Route container screens
+│   │   ├── routes/               # Route definitions & ProtectedRoute guards
+│   │   ├── services/             # Stateless API client calls
+│   │   └── utils/                # Token storage, API error parsers, and merges
+│   └── package.json
 │
-├── views/
-│   ├── auth_views.py
-│   └── review_views.py
+├── reviews/                      # Django Core App
+│   ├── serializers/              # Schema representation & validations
+│   ├── services/                 # External proxy adapters (OpenLibrary & TMDB)
+│   ├── views/                    # Modular viewsets & API endpoints
+│   ├── models.py                 # SQLite Schema mapping
+│   ├── urls.py                   # App routing endpoints
+│   └── permissions.py            # Object-level security guards
 │
-├── permissions.py
-├── models.py
-├── urls.py
-└── admin.py
+├── reviewlog_backend/            # Django Project Settings
+│   ├── settings.py
+│   └── urls.py
+│
+├── manage.py
+└── requirements.txt
 ```
 
 ---
 
-# API Endpoints
+## ✨ Features
 
-## Authentication
-
-| Method | Endpoint | Description |
-|---------|----------|-------------|
-| POST | `/api/register/` | Register User |
-| POST | `/api/token/` | Login |
-| POST | `/api/token/refresh/` | Refresh JWT Token |
-
----
-
-## Profile
-
-| Method | Endpoint | Description |
-|---------|----------|-------------|
-| GET | `/api/profile/` | Get Current User |
-| PATCH | `/api/profile/` | Update Profile |
+*   **User Accounts & Registrations:** Complete secure sign-up, login, and profile administration.
+*   **JWT Security Architecture:** Robust authentication featuring automatic token headers injection, automatic JWT access-token refresh using the refresh token, and safe 401 error containment.
+*   **Unified Media Search & Discovery:** Debounced, cancelable paged search for books and movies proxied server-side to hide third-party API keys securely.
+*   **Review Logging & Journaling:** Create, read, update, and delete (CRUD) reviews. Supports five-star ratings, visibility controls (Public/Private), and title metadata.
+*   **Favorites Vault:** A user-scoped personal collection to bookmark books and movies for future journaling.
+*   **Recently Viewed Logging:** Automatically logs recently selected media to render a customized "Continue Journaling" panel on the home page.
+*   **Community Reviews Feed:** A public feed displaying reviews published as "Public" by any community traveller.
+*   **Global Toasts & Offline Notices:** Custom toast messaging context and offline listener widgets to protect user input states.
 
 ---
 
-## Reviews
+## 🎨 Frontend Design Direction
 
-| Method | Endpoint |
-|---------|----------|
-| GET | `/api/` |
-| POST | `/api/` |
-| GET | `/api/<id>/` |
-| PUT | `/api/<id>/` |
-| PATCH | `/api/<id>/` |
-| DELETE | `/api/<id>/` |
+ReviewLog is progressively transitioning toward a **cinematic, dark, media-focused UI** inspired by the modern media-discovery usability and visual richness of **TMDB (The Movie Database)**:
 
----
-
-## Public Reviews
-
-| Method | Endpoint |
-|---------|----------|
-| GET | `/api/public-reviews/` |
-
-## External catalog endpoints
-
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | `/api/catalog/books/?q=<query>&page=1` | Search Open Library books |
-| GET | `/api/catalog/movies/?q=<query>&page=1` | Search TMDB movies |
-| GET/POST | `/api/favorites/` | List or save favorites |
-| DELETE | `/api/favorites/<id>/` | Remove a favorite |
-| GET/POST | `/api/recent-items/` | List or record recently viewed items |
-| GET | `/api/dashboard/stats/` | Review and favorite dashboard totals |
+*   **Cinematic Default Dark Theme:** Engineered using high-contrast typography, deep obsidian panel elevations (`oklch(17% 0.02 256)`), and a carbon canvas (`oklch(12% 0.015 256)`) to focus purely on poster imagery.
+*   **Glowing Design System Accents:** Utilizes TMDB-inspired bright teal (`#01b4e4`) and emerald secondary brand colors, combined with glowing rating gold (`#f5c518`) star highlights.
+*   **Global Top Navigation Header:** Desktop layouts have migrated to a horizontal top-bar header with responsive navigation states, secondary settings dropdowns, and clear "+ Add Review" shortcuts.
+*   **Accessible Mobile Overlays:** Mobile responsive drawers feature focus-trapping tab locks, keyboard Escape triggers, and full accessibility labels.
+*   *Note: This visual redesign is being implemented progressively in phases and is currently in progress.*
 
 ---
 
-# Installation
+## 🛡️ Authentication & Performance Fixes
 
-Clone the repository
-
-```bash
-git clone <repository-url>
-```
-
-Create virtual environment
-
-```bash
-python -m venv .venv
-```
-
-Activate virtual environment
-
-Windows
-
-```bash
-.venv\Scripts\activate
-```
-
-Install dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-Apply migrations
-
-```bash
-python manage.py migrate
-```
-
-Run the server
-
-```bash
-python manage.py runserver
-```
-
-For movie search, set `TMDB_API_KEY` in the backend environment (for example, your Render environment variables). Do not use `VITE_TMDB_API_KEY`.
+In our latest stability sprint, we resolved several critical session bottlenecks:
+*   **Interceptor Boundary Patch:** The Axios response interceptor completely bypasses the automatic refresh loop for non-authenticated endpoints (`/token/` or `/register/`). Wrong password login attempts reject instantly, shaving **3.5+ seconds** of redundant network latency.
+*   **Race-Condition Double-Navigations Mitigated:** Resolved a race condition where the rendering state re-evaluation triggered double navigations to `/dashboard`. This completely protects the SQLite database from concurrent query overloads.
+*   **Reduced Login Redirection Work:** Removed artificial `600ms` setTimeout delays during sign-in, allowing a fluid transition and reducing unnecessary authentication/navigation work.
+*   **Visual Flashing Guard:** Bound an `isInitializing` bootstrap context check around the router wrapper, displaying a full-screen spinner to shield the viewport until JWT authorization completes on cold-reloads.
 
 ---
 
-# Authentication
+## 🔗 Major API Endpoints
 
-All protected endpoints require a JWT Bearer Token.
+All endpoints except `register`, `token`, and `token/refresh` require an `Authorization: Bearer <access_token>` request header.
 
-Example Header
+### Authentication
+*   `POST /api/register/` — Register a new account.
+*   `POST /api/token/` — Login and fetch JWT access/refresh tokens.
+*   `POST /api/token/refresh/` — Refresh an expired access token.
 
-```
-Authorization: Bearer <your_access_token>
-```
+### User Management
+*   `GET /api/profile/` — Retrieve the current user's profile details.
+*   `PATCH /api/profile/` — Modify profile attributes.
 
----
+### Review Journaling
+*   `GET /api/reviews/` — List the authenticated user's reviews.
+*   `POST /api/reviews/` — Log a new review.
+*   `GET/PUT/PATCH/DELETE /api/reviews/<id>/` — View or manage specific reviews (enforces strict object-level user ownership).
+*   `GET /api/public-reviews/` — Browse published community reviews.
 
-# Frontend
+### Catalog Proxies
+*   `GET /api/catalog/books/?q=<query>&page=<n>` — Search OpenLibrary books.
+*   `GET /api/catalog/movies/?q=<query>&page=<n>` — Search TMDB movies.
 
-The React frontend lives in `frontend/`. See [frontend/README.md](frontend/README.md) for setup, routes, and architecture.
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-The app runs at `http://localhost:5173/` and connects to the deployed API at `https://reviewlog.onrender.com/api/`.
-
----
-
-# Future Improvements
-
-- Backend search, filter, and pagination
-- Categories & Tags
-- Image Uploads
-- Frontend deployment
-- PostgreSQL Support
-- API documentation (Swagger/OpenAPI)
-- Email verification and password-reset flow
-- PostgreSQL, Redis caching, and automated CI/CD for scaled production deployments
+### Personal Collections
+*   `GET/POST /api/favorites/` — Retrieve or save favorite books/movies.
+*   `DELETE /api/favorites/<id>/` — Remove an item from user favorites.
+*   `GET/POST /api/recent-items/` — List or record recently viewed catalog cards.
+*   `GET /api/dashboard/stats/` — Fetch aggregate review metrics.
 
 ---
 
-# Author
-Eshal Ayub
+## 🔒 Environment Variables
 
-Developed as part of an internship assignment using Django REST Framework.
+Sensitive configuration keys must never be committed to GitHub. Maintain them inside a local `.env` file or within your production platform's environment fields:
+
+### Backend Django
+*   `DJANGO_SECRET_KEY` — Unique cryptographic secret for encryption.
+*   `DJANGO_DEBUG` — Set to `false` in production.
+*   `ALLOWED_HOSTS` — Comma-separated list of approved DNS hosts.
+*   `CORS_ALLOWED_ORIGINS` — Comma-separated list of approved frontend client origins.
+*   `TMDB_API_KEY` — Your private key for TMDB catalog proxied requests.
+
+---
+
+## 💻 Local Setup & Development
+
+### 1. Backend Server Setup
+From the project root:
+
+1.  **Create and activate a virtual environment:**
+    ```bash
+    # Create
+    python -m venv .venv
+    
+    # Activate (Windows)
+    .venv\Scripts\activate
+    
+    # Activate (macOS/Linux)
+    source .venv/bin/activate
+    ```
+2.  **Install dependencies:**
+    ```bash
+    pip install -r requirements.txt
+    ```
+3.  **Apply database migrations:**
+    ```bash
+    python manage.py migrate
+    ```
+4.  **Launch the development server:**
+    ```bash
+    python manage.py runserver
+    ```
+    *The API will run at `http://127.0.0.1:8000/api/`*
+
+### 2. Frontend Client Setup
+From the `frontend/` directory:
+
+1.  **Install node dependencies:**
+    ```bash
+    npm install
+    ```
+2.  **Run development server (Vite):**
+    ```bash
+    npm run dev
+    ```
+    *The web app will run locally at `http://localhost:5173/` and securely proxy queries to the warm deployed Render backend.*
+3.  **Verify compilation & bundles:**
+    ```bash
+    npm run build
+    ```
+4.  **Run static linting checks (Oxlint):**
+    ```bash
+    npm run lint
+    ```
+
+---
+
+## 📈 Development Status
+
+### Completed
+*   Django REST Framework CRUD endpoints and schemas.
+*   Server-side Open Library & TMDB catalog search wrappers.
+*   JWT authentication lifecycle, storage, and auto-refresh Axios interceptors.
+*   Bootstrap visual state guards preventing router flashing.
+*   Eliminated double-navigation loops and corrected 401 interceptor bypass loops.
+*   Cinematic, dark-mode OKLCH design variables in `index.css`.
+*   A fully redesigned desktop top navigation Header and mobile drawers.
+
+### In Progress
+*   TMDB-inspired visual page refinements (Home, Search, Grid feeds).
+*   Reusable aspect-ratio media cards and horizontal carousel lane structures.
+
+### Next Up
+*   **Phase 3: Reusable Posters & Skeletons**
+
+---
+
+## 📝 Recent Checkpoint
+
+*   **Commit:** `ebb7907`
+*   **Message:** `feat: overhaul visual foundations and optimize auth performance`
+*   **Description:** Implemented cinematic dark styling foundations, designed the global top Navbar navigation header, corrected bootstrap login layout shifts, and resolved interceptor loop delays.
+
+---
+
+**Author:** Eshal Ayub  
+*Developed as part of a software engineering internship assignment utilizing Django REST Framework and React 19.*

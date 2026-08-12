@@ -9,6 +9,7 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isInitializing, setIsInitializing] = useState(true);
 
   useEffect(() => {
     let mounted = true;
@@ -18,6 +19,7 @@ export function AuthProvider({ children }) {
 
       if (!refreshToken) {
         if (mounted) {
+          setIsInitializing(false);
           setLoading(false);
         }
 
@@ -38,6 +40,7 @@ export function AuthProvider({ children }) {
         }
       } finally {
         if (mounted) {
+          setIsInitializing(false);
           setLoading(false);
         }
       }
@@ -85,9 +88,10 @@ export function AuthProvider({ children }) {
       logout,
       currentUser,
       loading,
+      isInitializing,
       isAuthenticated: Boolean(currentUser),
     }),
-    [currentUser, loading],
+    [currentUser, loading, isInitializing],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

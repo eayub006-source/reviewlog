@@ -10,6 +10,7 @@ import { DashboardSkeleton } from "@/components/common/Skeleton";
 import { Button } from "@/components/ui/button";
 import { useProfile } from "@/hooks/useProfile";
 import { useReviews } from "@/hooks/useReviews";
+import { useToast } from "@/hooks/useToast";
 import { getFavorites, getRecentItems } from "@/services/favoriteService";
 import { useEffect, useState } from "react";
 
@@ -17,8 +18,22 @@ function Dashboard() {
   const navigate = useNavigate();
   const { profile } = useProfile();
   const { reviews, loading } = useReviews({ scope: "mine" });
+  const { showToast } = useToast();
   const [catalog, setCatalog] = useState({ favorites: 0, recent: [] });
-  useEffect(() => { Promise.all([getFavorites(), getRecentItems()]).then(([favorites, recent]) => setCatalog({ favorites: favorites.length, recent: recent.slice(0, 4) })).catch(() => undefined); }, []);
+
+  useEffect(() => {
+    Promise.all([getFavorites(), getRecentItems()])
+      .then(([favorites, recent]) => {
+        setCatalog({ favorites: favorites.length, recent: recent.slice(0, 4) });
+      })
+      .catch(() => {
+        showToast({
+          tone: "error",
+          title: "Dashboard sync failed",
+          description: "Could not load your saved favorites or recently viewed items."
+        });
+      });
+  }, [showToast]);
 
   const stats = useMemo(() => {
     const totalReviews = reviews.length;

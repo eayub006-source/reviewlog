@@ -77,9 +77,7 @@ function Login() {
         title: "Login successful",
         description: "Welcome back to ReviewLog.",
       });
-      setTimeout(() => {
-        navigate("/dashboard", { replace: true });
-      }, 600);
+      navigate("/dashboard", { replace: true });
     } catch (caughtError) {
       const message = caughtError.response?.status === 401
         ? "Invalid username or password."

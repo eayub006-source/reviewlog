@@ -4,9 +4,9 @@ import Loader from "@/components/common/Loader";
 import { useAuth } from "@/hooks/useAuth";
 
 function ProtectedRoute({ children }) {
-  const { loading, isAuthenticated } = useAuth();
+  const { isInitializing, isAuthenticated } = useAuth();
 
-  if (loading) {
+  if (isInitializing) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-50 text-slate-600" role="status" aria-live="polite">
         <Loader label="Checking your session..." />

@@ -22,7 +22,15 @@ const Unauthorized = lazy(() => import("@/pages/errors/Unauthorized"));
 const Forbidden = lazy(() => import("@/pages/errors/Forbidden"));
 const ServerError = lazy(() => import("@/pages/errors/ServerError"));
 
+import { useAuth } from "@/hooks/useAuth";
+
 function App() {
+  const { isInitializing } = useAuth();
+
+  if (isInitializing) {
+    return <RouteFallback />;
+  }
+
   return (
     <BrowserRouter>
       <Suspense fallback={<RouteFallback />}>

@@ -1,94 +1,101 @@
 import axios from "axios";
-
-import { API_BASE_URL } from "@/constants/api";
-import { getAccessToken, getRefreshToken, clearAuthTokens, setAuthTokens } from "@/utils/authStorage";
+import { getAccessToken, getRefreshToken, setAuthTokens, clearAuthTokens } from "@/utils/authStorage";
 import { refreshAccessToken } from "@/services/tokenService";
-import { clearProfileCache } from "@/services/profileService";
 
 const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: "https://reviewlog.onrender.com/api/",
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-let isRefreshing = false;
-let pendingRequests = [];
-
-function processQueue(error, token = null) {
-  pendingRequests.forEach((promise) => {
-    if (error) {
-      promise.reject(error);
-      return;
+// Request interceptor to attach bearer token
+api.interceptors.request.use(
+  (config) => {
+    const token = getAccessToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
-
-    promise.resolve(token);
-  });
-
-  pendingRequests = [];
-}
-
-api.interceptors.request.use((config) => {
-  const token = getAccessToken();
-
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
   }
+);
 
-  return config;
-});
+let isRefreshing = false;
+let failedQueue = [];
 
+const processQueue = (error, token = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+
+// Response interceptor to handle auto token refresh on 401
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    return response;
+  },
   async (error) => {
     const originalRequest = error.config;
 
-    if (
-      error.response?.status !== 401 ||
-      !originalRequest ||
-      originalRequest._retry ||
-      originalRequest.url?.includes("token/refresh/")
-    ) {
-      return Promise.reject(error);
-    }
+    // Skip refresh token logic if the request is to login or register endpoints
+    const isAuthRequest = originalRequest && (
+      originalRequest.url?.includes("token/") || 
+      originalRequest.url?.includes("register/")
+    );
 
-    const refreshToken = getRefreshToken();
+    // Check if error is 401, is not an auth request, and not already retried
+    if (error.response?.status === 401 && originalRequest && !isAuthRequest && !originalRequest._retry) {
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        })
+          .then((token) => {
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+            return api(originalRequest);
+          })
+          .catch((err) => {
+            return Promise.reject(err);
+          });
+      }
 
-    if (!refreshToken) {
-      clearAuthTokens();
-      return Promise.reject(error);
-    }
+      originalRequest._retry = true;
+      isRefreshing = true;
 
-    if (isRefreshing) {
-      return new Promise((resolve, reject) => {
-        pendingRequests.push({ resolve, reject });
-      }).then((token) => {
-        originalRequest.headers.Authorization = `Bearer ${token}`;
+      const refreshToken = getRefreshToken();
+      if (!refreshToken) {
+        isRefreshing = false;
+        clearAuthTokens();
+        return Promise.reject(error);
+      }
+
+      try {
+        const tokens = await refreshAccessToken(refreshToken);
+        setAuthTokens(tokens);
+        const newAccessToken = tokens.access;
+        
+        processQueue(null, newAccessToken);
+        
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
         return api(originalRequest);
-      });
+      } catch (refreshError) {
+        processQueue(refreshError, null);
+        clearAuthTokens();
+        return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
+      }
     }
 
-    originalRequest._retry = true;
-    isRefreshing = true;
-
-    try {
-      const tokens = await refreshAccessToken(refreshToken);
-      setAuthTokens({
-        access: tokens.access,
-        refresh: tokens.refresh ?? refreshToken,
-      });
-      processQueue(null, tokens.access);
-      originalRequest.headers.Authorization = `Bearer ${tokens.access}`;
-      return api(originalRequest);
-    } catch (refreshError) {
-      processQueue(refreshError, null);
-      clearAuthTokens();
-      clearProfileCache();
-      return Promise.reject(refreshError);
-    } finally {
-      isRefreshing = false;
-    }
-  },
+    return Promise.reject(error);
+  }
 );
 
 export default api;

@@ -20,6 +20,7 @@ function Navbar({ currentUser, onLogout }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOverlayOpen, setSearchOverlayOpen] = useState(false);
   const mobileMenuRef = useRef(null);
+  const searchRef = useRef(null);
 
   const isActive = (path) => {
     if (path === "/dashboard") {
@@ -55,6 +56,16 @@ function Navbar({ currentUser, onLogout }) {
     }
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setSearchOverlayOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   useEffect(() => {
@@ -137,7 +148,7 @@ function Navbar({ currentUser, onLogout }) {
             </nav>
           </div>
 
-          <div className="flex-1 max-w-sm hidden md:block">
+          <div ref={searchRef} className="flex-1 max-w-sm relative">
             {canSearch ? (
               <SearchBar value={searchValue} onChange={handleSearchChange} placeholder="Search reviews" />
             ) : (
@@ -148,16 +159,17 @@ function Navbar({ currentUser, onLogout }) {
                     setGlobalQuery(event.target.value);
                     setSearchOverlayOpen(true);
                   }}
+                  onFocus={() => setSearchOverlayOpen(true)}
                   onKeyDown={submitGlobalSearch}
                   placeholder="Search catalog"
                   ariaLabel="Search movies or books"
                 />
                 {searchOverlayOpen && globalQuery && (
-                  <div className="absolute top-12 z-50 flex w-full flex-col gap-2 rounded-xl border border-border bg-card p-3 shadow-md">
-                    <p className="caption-text px-1 mb-1">Quick Search</p>
+                  <div className="absolute top-[calc(100%+8px)] left-1/2 -translate-x-1/2 md:left-0 md:translate-x-0 z-50 flex w-[calc(100vw-2rem)] max-w-[350px] md:w-full md:max-w-none flex-col gap-2 rounded-xl border border-border bg-card p-3 shadow-md">
+                    <p className="caption-text px-1 mb-1 font-semibold text-primary">Quick Search</p>
                     <div className="flex gap-2">
                       <button
-                        className="btn btn-primary flex-1 h-9"
+                        className="btn btn-primary flex-1 h-9 text-xs sm:text-sm px-2 font-medium"
                         onClick={() => {
                           saveSearchHistory(globalQuery);
                           setSearchOverlayOpen(false);
@@ -167,7 +179,7 @@ function Navbar({ currentUser, onLogout }) {
                         Search Books
                       </button>
                       <button
-                        className="btn btn-outline flex-1 h-9"
+                        className="btn btn-outline flex-1 h-9 text-xs sm:text-sm px-2 font-medium"
                         onClick={() => {
                           saveSearchHistory(globalQuery);
                           setSearchOverlayOpen(false);
@@ -180,8 +192,8 @@ function Navbar({ currentUser, onLogout }) {
                   </div>
                 )}
                 {searchOverlayOpen && !globalQuery && suggestions.length > 0 && (
-                  <div className="absolute top-12 z-50 w-full rounded-xl border border-border bg-card p-2 shadow-md">
-                    <p className="caption-text px-2 py-1.5 mb-1">Recent Searches</p>
+                  <div className="absolute top-[calc(100%+8px)] left-1/2 -translate-x-1/2 md:left-0 md:translate-x-0 z-50 w-[calc(100vw-2rem)] max-w-[350px] md:w-full md:max-w-none rounded-xl border border-border bg-card p-2 shadow-md">
+                    <p className="caption-text px-2 py-1.5 mb-1 font-semibold text-primary">Recent Searches</p>
                     {suggestions.slice(0, 4).map((term) => (
                       <button
                         key={term}
@@ -200,7 +212,7 @@ function Navbar({ currentUser, onLogout }) {
             )}
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 shrink-0">
             <button
               onClick={() => navigate("/reviews/new")}
               className="btn btn-secondary hidden sm:inline-flex h-9 py-0 px-4"
@@ -225,7 +237,7 @@ function Navbar({ currentUser, onLogout }) {
                 menuClassName="border border-border bg-card p-1.5 shadow-md rounded-xl min-w-[200px]"
                 triggerLabel={
                   <span className="flex items-center gap-2">
-                    <Avatar name={currentUser?.username ?? "Account"} size="sm" className="bg-primary text-primary-foreground font-bold" />
+                    <Avatar name={currentUser?.username ?? "Account"} src={currentUser?.avatar_data} size="sm" className="bg-primary text-primary-foreground font-bold" />
                     <span className="max-w-[80px] truncate text-sm font-semibold text-foreground">
                       {currentUser?.username ?? "Account"}
                     </span>
@@ -244,10 +256,14 @@ function Navbar({ currentUser, onLogout }) {
 
             <button
               onClick={() => navigate("/profile")}
-              className="sm:hidden flex h-8 w-8 items-center justify-center rounded-full bg-primary font-bold text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="sm:hidden flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-primary font-bold text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-label="View Profile"
             >
-              <span>{(currentUser?.username ?? "U").slice(0, 1).toUpperCase()}</span>
+              {currentUser?.avatar_data ? (
+                <img src={currentUser.avatar_data} alt={currentUser.username} className="h-full w-full object-cover" />
+              ) : (
+                <span>{(currentUser?.username ?? "U").slice(0, 1).toUpperCase()}</span>
+              )}
             </button>
           </div>
 
@@ -333,7 +349,7 @@ function Navbar({ currentUser, onLogout }) {
 
           <div className="border-t border-border p-6 bg-muted/30 flex flex-col gap-3">
             <div className="flex items-center gap-3 mb-2">
-              <Avatar name={currentUser?.username ?? "Account"} size="md" className="bg-primary text-primary-foreground font-bold" />
+              <Avatar name={currentUser?.username ?? "Account"} src={currentUser?.avatar_data} size="md" className="bg-primary text-primary-foreground font-bold" />
               <div>
                 <p className="text-sm font-bold text-foreground">{currentUser?.username ?? "Account"}</p>
                 <p className="text-xs text-muted-foreground">{currentUser?.email ?? "User Session"}</p>

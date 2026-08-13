@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { useAuth } from "@/hooks/useAuth";
 import { getProfile } from "@/services/profileService";
 import { getFriendlyApiError } from "@/utils/apiErrors";
 
 export function useProfile() {
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { currentUser, updateCurrentUser } = useAuth();
+  const [loading, setLoading] = useState(!currentUser);
   const [error, setError] = useState("");
 
   const loadProfile = useCallback(
@@ -15,7 +16,7 @@ export function useProfile() {
 
       try {
         const data = await getProfile({ force });
-        setProfile(data);
+        updateCurrentUser(data);
         return data;
       } catch (caughtError) {
         const message = getFriendlyApiError(caughtError);
@@ -25,21 +26,25 @@ export function useProfile() {
         setLoading(false);
       }
     },
-    [],
+    [updateCurrentUser],
   );
 
   useEffect(() => {
-    loadProfile().catch(() => undefined);
-  }, [loadProfile]);
+    if (!currentUser) {
+      loadProfile().catch(() => undefined);
+    } else {
+      setLoading(false);
+    }
+  }, [currentUser, loadProfile]);
 
   const value = useMemo(
     () => ({
-      profile,
+      profile: currentUser,
       loading,
       error,
       refreshProfile: () => loadProfile({ force: true }),
     }),
-    [error, loading, loadProfile, profile],
+    [error, loading, loadProfile, currentUser],
   );
 
   return value;

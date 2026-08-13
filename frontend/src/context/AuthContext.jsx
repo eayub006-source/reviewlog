@@ -1,4 +1,4 @@
-import { createContext, useEffect, useMemo, useState } from "react";
+import { createContext, useEffect, useMemo, useState, useCallback } from "react";
 
 import { getProfile, loginUser } from "@/services/authService";
 import { clearAuthTokens, getRefreshToken, setAuthTokens } from "@/utils/authStorage";
@@ -90,16 +90,21 @@ export function AuthProvider({ children }) {
     setLoading(false);
   }
 
+  const updateCurrentUser = useCallback((userData) => {
+    setCurrentUser(userData);
+  }, []);
+
   const value = useMemo(
     () => ({
       login,
       logout,
       currentUser,
+      updateCurrentUser,
       loading,
       isInitializing,
       isAuthenticated: Boolean(currentUser),
     }),
-    [currentUser, loading, isInitializing],
+    [currentUser, loading, isInitializing, updateCurrentUser],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

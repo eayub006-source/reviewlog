@@ -23,4 +23,5 @@ class ProfileView(generics.RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
-        return self.request.user
+        from django.contrib.auth.models import User
+        return User.objects.select_related("profile", "settings").get(id=self.request.user.id)

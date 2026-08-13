@@ -25,7 +25,7 @@ function Avatar({ className, name = "User", src, alt, size = "md" }) {
       aria-label={alt || name}
       role="img"
     >
-      {src ? <img src={src} alt={alt || name} className="h-full w-full object-cover" /> : initials}
+      {src ? <img src={src} alt={alt || name} className="h-full w-full object-cover" loading="lazy" decoding="async" /> : initials}
     </div>
   );
 }

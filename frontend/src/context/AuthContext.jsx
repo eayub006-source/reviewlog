@@ -3,6 +3,8 @@ import { createContext, useEffect, useMemo, useState, useCallback } from "react"
 import { getProfile, loginUser } from "@/services/authService";
 import { clearAuthTokens, getRefreshToken, setAuthTokens } from "@/utils/authStorage";
 import { clearProfileCache } from "@/services/profileService";
+import { clearReviewCache } from "@/services/reviewService";
+import { clearFavoriteCache } from "@/services/favoriteService";
 
 const AuthContext = createContext(null);
 
@@ -33,19 +35,15 @@ export function AuthProvider({ children }) {
           setCurrentUser(profile);
         }
       } catch (error) {
-        // Only clear tokens if the backend explicitly rejects the session (401/403)
-        // Note: The axios interceptor handles token refresh. If we reach here with a 401/403, 
-        // it means both access and refresh tokens are invalid.
         if (error.response?.status === 401 || error.response?.status === 403) {
           clearAuthTokens();
           clearProfileCache();
+          clearReviewCache();
+          clearFavoriteCache();
           if (mounted) {
             setCurrentUser(null);
           }
         }
-        // For other errors (500, 502, network), we keep the tokens in storage 
-        // and just finish initialization. ProtectedRoute will still redirect to login 
-        // if no user is found, but the tokens will be available for a later retry.
       } finally {
         if (mounted) {
           setIsInitializing(false);
@@ -86,6 +84,8 @@ export function AuthProvider({ children }) {
     setLoading(true);
     clearAuthTokens();
     clearProfileCache();
+    clearReviewCache();
+    clearFavoriteCache();
     setCurrentUser(null);
     setLoading(false);
   }

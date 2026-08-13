@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Compass, NotebookText } from "lucide-react";
 
@@ -56,7 +56,7 @@ function Dashboard() {
     };
   }, []);
 
-  const handleRecommendSelect = (item, type) => {
+  const handleRecommendSelect = useCallback((item, type) => {
     const serialized = JSON.stringify({
       type,
       id: item.id,
@@ -73,7 +73,11 @@ function Dashboard() {
       }
     });
     navigate(`/reviews/new?item=${encodeURIComponent(serialized)}`);
-  };
+  }, [navigate]);
+
+  const handleMediaSelect = useCallback((item) => {
+    handleRecommendSelect(item, item.type || item.item_type || "movie");
+  }, [handleRecommendSelect]);
 
   const stats = useMemo(() => {
     const totalReviews = reviews.length;
@@ -159,16 +163,7 @@ function Dashboard() {
               <MediaCard
                 item={toMediaItem(item)}
                 type={item.item_type}
-                onSelect={() => navigate(`/reviews/new?item=${encodeURIComponent(
-                  JSON.stringify({
-                    type: item.item_type,
-                    id: item.item_id,
-                    source: item.external_source,
-                    title: item.title,
-                    image: item.image,
-                    metadata: item.metadata
-                  })
-                )}`)}
+                onSelect={handleMediaSelect}
               />
             </div>
           ))}
@@ -183,16 +178,7 @@ function Dashboard() {
                 item={toMediaItem(item)}
                 type={item.item_type}
                 isFavorite={true}
-                onSelect={() => navigate(`/reviews/new?item=${encodeURIComponent(
-                  JSON.stringify({
-                    type: item.item_type,
-                    id: item.item_id,
-                    source: item.external_source,
-                    title: item.title,
-                    image: item.image,
-                    metadata: item.metadata
-                  })
-                )}`)}
+                onSelect={handleMediaSelect}
               />
             </div>
           ))}
@@ -212,10 +198,11 @@ function Dashboard() {
                   releaseDate: item.releaseDate,
                   averageRating: item.averageRating,
                   overview: item.overview,
+                  type: "movie"
                 }}
                 type="movie"
                 showActions={true}
-                onSelect={() => handleRecommendSelect(item, "movie")}
+                onSelect={handleMediaSelect}
               />
             </div>
           ))}
@@ -234,10 +221,11 @@ function Dashboard() {
                   coverUrl: item.image,
                   firstPublishYear: item.firstPublishYear,
                   author: item.author,
+                  type: "book"
                 }}
                 type="book"
                 showActions={true}
-                onSelect={() => handleRecommendSelect(item, "book")}
+                onSelect={handleMediaSelect}
               />
             </div>
           ))}

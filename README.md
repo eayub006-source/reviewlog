@@ -156,6 +156,75 @@ reviewlog/
 3. ALLOWED_HOSTS: List of permitted hostnames.
 4. CORS_ALLOWED_ORIGINS: Permitted frontend origins.
 5. TMDB_API_KEY: Private key for movie catalog access.
+6. DJANGO_EMAIL_BACKEND, RESEND_API_KEY, EMAIL_HOST, EMAIL_PORT, EMAIL_HOST_USER, EMAIL_HOST_PASSWORD, EMAIL_USE_TLS, EMAIL_TIMEOUT, DEFAULT_FROM_EMAIL: Password reset email delivery. See "Password Reset Email Configuration" below.
+
+## Password Reset Email Configuration
+
+ReviewLog's "Forgot password?" flow sends a time-limited, single-use reset link by email. Delivery is handled by Django's standard `send_mail()` call, but which transport actually carries that email is controlled by `DJANGO_EMAIL_BACKEND`.
+
+### Why not plain SMTP
+
+Render's free tier blocks all outbound traffic to SMTP ports (25, 465, 587) as of September 2025. That means a raw SMTP connection — Gmail SMTP included — can never leave a free Render service, no matter how correctly the host, port, and credentials are set. Production therefore defaults to sending mail over HTTPS instead, via Resend's API, which isn't affected by that port block. Local development still defaults to Django's console backend (emails print to the terminal instead of being sent), since that needs no setup at all.
+
+### Environment variables
+
+1. DJANGO_EMAIL_BACKEND: Which backend Django uses to send mail. Defaults to the console backend when DJANGO_DEBUG is true, and to `reviews.email_backends.ResendApiEmailBackend` otherwise. Can be set to `django.core.mail.backends.smtp.EmailBackend` to use SMTP instead (see below).
+2. RESEND_API_KEY: API key for Resend, used only when the Resend backend is active.
+3. EMAIL_HOST: SMTP server hostname, used only when the SMTP backend is active.
+4. EMAIL_PORT: SMTP server port, used only when the SMTP backend is active.
+5. EMAIL_HOST_USER: SMTP username, used only when the SMTP backend is active.
+6. EMAIL_HOST_PASSWORD: SMTP password, used only when the SMTP backend is active. Never the account's real password — see the Gmail section below.
+7. EMAIL_USE_TLS: Whether to use TLS for the SMTP connection, used only when the SMTP backend is active.
+8. EMAIL_TIMEOUT: Socket timeout (in seconds) for SMTP connections, so a blocked or unreachable server fails fast instead of hanging the request. Defaults to 10.
+9. DEFAULT_FROM_EMAIL: The "From" address on outgoing mail. Used by both backends.
+
+### Production setup: Resend (current default)
+
+1. Create a free account at resend.com and generate an API key.
+2. Without a verified domain, Resend restricts you to sending from `onboarding@resend.dev` and only to the email address your Resend account is registered with. To send password resets to any user's real address, add and verify a domain you own in Resend's dashboard (DNS records), then send from an address on that domain.
+3. In Render, open the backend service → Environment, and set:
+   - `RESEND_API_KEY=<your-resend-api-key>`
+   - `DEFAULT_FROM_EMAIL=<your-verified-sending-address>` (e.g. `onboarding@resend.dev` for testing, or `no-reply@yourdomain.com` once a domain is verified)
+4. Save. Render redeploys automatically.
+5. Test by requesting a reset at https://reviewlog.vercel.app/forgot-password.
+
+### Alternative: Gmail SMTP (only works on a paid Render plan)
+
+Render's paid instance tiers do not block outbound SMTP ports, so if you move off the free tier you can switch back to SMTP instead of Resend:
+
+```
+DJANGO_EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_HOST_USER=<your-gmail-address>
+EMAIL_HOST_PASSWORD=<your-gmail-app-password>
+EMAIL_USE_TLS=true
+DEFAULT_FROM_EMAIL=<your-gmail-address>
+```
+
+`EMAIL_HOST_USER` and `DEFAULT_FROM_EMAIL` should both be the Gmail address you're sending from. `EMAIL_HOST_PASSWORD` must be a **Gmail App Password**, never the account's normal login password.
+
+To generate one:
+
+1. Enable 2-Step Verification on the Google account, if it isn't already: myaccount.google.com/security.
+2. Go to myaccount.google.com/apppasswords and create a new App Password (name it something like "ReviewLog").
+3. Google generates a 16-character password — copy it directly into Render's `EMAIL_HOST_PASSWORD` field. Don't store it anywhere else.
+4. Add the remaining SMTP variables above to Render → Environment, save, and let Render redeploy.
+5. Test by requesting a reset at https://reviewlog.vercel.app/forgot-password.
+
+### Security notes
+
+- A password reset request always returns the same generic response, whether or not the submitted email belongs to an account. This is intentional — it prevents the endpoint from being used to discover which emails are registered.
+- Delivery failures (misconfigured backend, rejected credentials, unreachable network) are logged server-side with the exception type and non-secret configuration details, but never the reset token, the reset link, or any credential value. The client-facing response is unaffected by delivery success or failure.
+
+### Troubleshooting: email doesn't arrive
+
+1. Check spam/junk first — this is the most common cause.
+2. Check the Render service's Logs tab for a line starting with "Password reset email NOT sent" (configuration missing) or "Failed to send password reset email" (a send was attempted and failed, with the exception type and reason).
+3. If using Resend, confirm `RESEND_API_KEY` is set in Render and that `DEFAULT_FROM_EMAIL` is either `onboarding@resend.dev` or an address on a domain you've verified in Resend.
+4. If using SMTP, confirm `EMAIL_HOST` is exactly `smtp.gmail.com`, `EMAIL_PORT` is `587`, and `EMAIL_USE_TLS` is `true`.
+5. If using SMTP, confirm `EMAIL_HOST_PASSWORD` is a Gmail App Password (16 characters, generated as above) and not the account's regular password — Gmail rejects the regular password for SMTP login when 2-Step Verification is enabled.
+6. If using SMTP on Render's free tier: this will never work regardless of credentials, since outbound SMTP ports are blocked at the network level. Switch to the Resend backend, or upgrade to a paid Render plan.
 
 ## Local Setup
 

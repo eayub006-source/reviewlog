@@ -227,18 +227,33 @@ FRONTEND_URL = os.environ.get("FRONTEND_URL", "https://reviewlog.vercel.app")
 # Email delivery for password resets etc.
 #
 # The backend is chosen from DEBUG, not hardcoded: local dev defaults to
-# printing emails to the console (zero setup needed), while anything running
-# with DEBUG off defaults to real SMTP. Production must never silently fall
-# back to the console backend just because DJANGO_EMAIL_BACKEND wasn't set.
+# printing emails to the console (zero setup needed). Production defaults to
+# reviews.email_backends.ResendApiEmailBackend (HTTPS, port 443) rather than
+# Django's SMTP backend, because Render's free tier blocks all outbound
+# traffic to SMTP ports (25/465/587) - a socket-based backend can never
+# deliver mail from there, no matter how it's configured. Production must
+# never silently fall back to the console backend just because
+# DJANGO_EMAIL_BACKEND wasn't set. If you move to a paid Render plan (which
+# does allow outbound SMTP), you can set DJANGO_EMAIL_BACKEND back to
+# django.core.mail.backends.smtp.EmailBackend and the EMAIL_HOST/PORT/USER/
+# PASSWORD/TLS variables below still apply.
 EMAIL_BACKEND = os.environ.get(
     "DJANGO_EMAIL_BACKEND",
     "django.core.mail.backends.console.EmailBackend"
     if DEBUG
-    else "django.core.mail.backends.smtp.EmailBackend",
+    else "reviews.email_backends.ResendApiEmailBackend",
 )
+# Used only by reviews.email_backends.ResendApiEmailBackend.
+RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
+# Used only by Django's built-in SMTP backend (e.g. after a Render upgrade).
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "")
 EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+# Without this, Python's smtplib has no socket timeout and can hang
+# indefinitely (e.g. if an outbound SMTP port is network-blocked), which
+# eventually kills the whole request via the WSGI server's own timeout
+# instead of failing fast and letting our error handling run.
+EMAIL_TIMEOUT = int(os.environ.get("EMAIL_TIMEOUT", "10"))
 EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "true").lower() == "true"
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "no-reply@reviewlog.app")

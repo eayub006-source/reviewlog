@@ -87,16 +87,25 @@ class PasswordResetRequestView(APIView):
             token = _password_reset_token_generator.make_token(user)
             reset_url = f"{settings.FRONTEND_URL}/reset-password/{uid}/{token}"
             uses_smtp = settings.EMAIL_BACKEND == "django.core.mail.backends.smtp.EmailBackend"
+            uses_resend = settings.EMAIL_BACKEND == "reviews.email_backends.ResendApiEmailBackend"
 
+            not_configured_reason = None
             if uses_smtp and not settings.EMAIL_HOST:
+                not_configured_reason = (
+                    "SMTP backend is selected but EMAIL_HOST is not configured. Set "
+                    "EMAIL_HOST, EMAIL_PORT, EMAIL_HOST_USER, EMAIL_HOST_PASSWORD, "
+                    "EMAIL_USE_TLS, and DEFAULT_FROM_EMAIL in the environment."
+                )
+            elif uses_resend and not settings.RESEND_API_KEY:
+                not_configured_reason = (
+                    "Resend backend is selected but RESEND_API_KEY is not configured. "
+                    "Set RESEND_API_KEY and DEFAULT_FROM_EMAIL in the environment."
+                )
+
+            if not_configured_reason:
                 # Fail loudly in the logs rather than silently pretending the
                 # email went out. Never include the token/reset_url here.
-                logger.error(
-                    "Password reset email NOT sent: SMTP backend is selected but "
-                    "EMAIL_HOST is not configured. Set EMAIL_HOST, EMAIL_PORT, "
-                    "EMAIL_HOST_USER, EMAIL_HOST_PASSWORD, EMAIL_USE_TLS, and "
-                    "DEFAULT_FROM_EMAIL in the environment."
-                )
+                logger.error("Password reset email NOT sent: %s", not_configured_reason)
             else:
                 try:
                     send_mail(
@@ -110,11 +119,33 @@ class PasswordResetRequestView(APIView):
                         recipient_list=[email],
                         fail_silently=False,
                     )
-                except Exception:
+                except Exception as exc:
                     # Never leak delivery failures to the client (that would be an
                     # enumeration signal); log server-side so misconfiguration is
-                    # still visible in Render's logs. Never log the token/reset_url.
-                    logger.exception("Failed to send password reset email (SMTP error)")
+                    # still visible in Render's logs. Never log the token/reset_url,
+                    # EMAIL_HOST_PASSWORD, or RESEND_API_KEY - only the exception
+                    # type/message and non-secret config, so a human can tell
+                    # "wrong credentials" apart from "network/port blocked" apart
+                    # from "wrong host" without ever seeing a secret value.
+                    safe_context = {"backend": settings.EMAIL_BACKEND, "from": settings.DEFAULT_FROM_EMAIL}
+                    if uses_smtp:
+                        safe_context.update(
+                            host=settings.EMAIL_HOST,
+                            port=settings.EMAIL_PORT,
+                            tls=settings.EMAIL_USE_TLS,
+                            user_set=bool(settings.EMAIL_HOST_USER),
+                            password_set=bool(settings.EMAIL_HOST_PASSWORD),
+                        )
+                    elif uses_resend:
+                        safe_context.update(api_key_set=bool(settings.RESEND_API_KEY))
+
+                    logger.error(
+                        "Failed to send password reset email: %s: %s %s",
+                        type(exc).__name__,
+                        exc,
+                        safe_context,
+                        exc_info=True,
+                    )
 
         return Response(
             {"detail": "If an account with that email exists, a password reset link has been sent."},

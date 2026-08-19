@@ -23,7 +23,7 @@ function Profile() {
         month: "long",
         year: "numeric",
       })
-    : "Unavailable";
+    : null;
 
   // Calculate rating distribution
   const distribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
@@ -105,16 +105,16 @@ function Profile() {
               )}
             </div>
             
-            <div className="flex-1 pb-2">
-              <h1 className="font-heading text-3xl font-bold text-foreground">
-                {profile.first_name || profile.last_name 
-                  ? `${profile.first_name} ${profile.last_name}`.trim() 
+            <div className="flex-1 min-w-0 pb-2">
+              <h1 className="font-heading text-3xl font-bold text-foreground truncate">
+                {profile.first_name || profile.last_name
+                  ? `${profile.first_name} ${profile.last_name}`.trim()
                   : profile.username}
               </h1>
-              <p className="text-muted-foreground mt-1">@{profile.username}</p>
+              <p className="text-muted-foreground mt-1 truncate">@{profile.username}</p>
             </div>
 
-            <div className="pb-2 flex gap-2">
+            <div className="pb-2 flex gap-2 shrink-0">
               {isEditing ? (
                 <>
                   <button onClick={handleEditToggle} className="btn btn-ghost px-4 h-9">
@@ -175,12 +175,16 @@ function Profile() {
                   </div>
                 </div>
                 <div className="space-y-3 bg-muted/50 p-4 rounded-xl border border-border">
-                  <div className="flex items-center gap-3 text-sm text-foreground">
-                    <Mail className="h-4 w-4 text-muted-foreground" /> {profile.email}
+                  <div className="flex items-center gap-3 text-sm text-foreground min-w-0">
+                    <Mail className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    <span className="truncate">{profile.email}</span>
                   </div>
-                  <div className="flex items-center gap-3 text-sm text-foreground">
-                    <CalendarDays className="h-4 w-4 text-muted-foreground" /> Member since {memberSince}
-                  </div>
+                  {memberSince && (
+                    <div className="flex items-center gap-3 text-sm text-foreground min-w-0">
+                      <CalendarDays className="h-4 w-4 shrink-0 text-muted-foreground" />
+                      <span className="truncate">Member since {memberSince}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             )}

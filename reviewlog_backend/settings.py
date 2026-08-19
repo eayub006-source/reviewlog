@@ -37,14 +37,46 @@ load_local_environment()
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "django-insecure-local-development-only")
-
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("DJANGO_DEBUG", "true").lower() == "true"
+# Fail-safe default: DEBUG is OFF unless explicitly turned on. A missing
+# environment variable must never silently enable debug mode in production.
+DEBUG = os.environ.get("DJANGO_DEBUG", "false").lower() == "true"
 
-if not DEBUG and SECRET_KEY == "django-insecure-local-development-only":
-    raise ImproperlyConfigured("DJANGO_SECRET_KEY must be set when DJANGO_DEBUG is false.")
+# Known-compromised placeholder values that must never be used as a real
+# signing key, even if someone pastes one of them into an environment
+# variable by mistake (e.g. copying an old/leaked value).
+_KNOWN_INSECURE_SECRET_KEYS = {
+    "django-insecure-local-development-only",
+}
+
+
+def _resolve_secret_key():
+    configured = os.environ.get("DJANGO_SECRET_KEY")
+
+    if configured:
+        if configured in _KNOWN_INSECURE_SECRET_KEYS:
+            raise ImproperlyConfigured(
+                "DJANGO_SECRET_KEY is set to a known-insecure placeholder value. "
+                "Generate a new secret and set it via the DJANGO_SECRET_KEY environment variable."
+            )
+        return configured
+
+    if DEBUG:
+        # Local-development-only: generate a fresh random key for this process.
+        # It is never persisted and never reused, so it can never become a
+        # known/guessable production signing key. Set DJANGO_SECRET_KEY in a
+        # local .env file (git-ignored) if you want it to stay stable across
+        # dev server restarts.
+        from django.core.management.utils import get_random_secret_key
+        return get_random_secret_key()
+
+    raise ImproperlyConfigured(
+        "DJANGO_SECRET_KEY must be set via environment variable when DJANGO_DEBUG is not true."
+    )
+
+
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = _resolve_secret_key()
 
 def comma_separated_environment(name, default=""):
     return [value.strip() for value in os.getenv(name, default).split(",") if value.strip()]
@@ -83,6 +115,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'reviews.middleware.NoStoreApiCacheMiddleware',
 ]
 
 ROOT_URLCONF = 'reviewlog_backend.urls'
@@ -186,3 +219,22 @@ CSRF_COOKIE_SECURE = not DEBUG
 SECURE_HSTS_SECONDS = int(os.environ.get("DJANGO_SECURE_HSTS_SECONDS", "0"))
 SECURE_HSTS_INCLUDE_SUBDOMAINS = SECURE_HSTS_SECONDS > 0
 SECURE_HSTS_PRELOAD = os.environ.get("DJANGO_SECURE_HSTS_PRELOAD", "false").lower() == "true"
+
+# The deployed frontend origin, used to build links (e.g. password reset)
+# that are sent in emails and must point at the SPA, not the API.
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "https://reviewlog.vercel.app")
+
+# Email delivery for password resets etc. Defaults to printing to the
+# console (safe for local dev). Set EMAIL_BACKEND to a real SMTP/provider
+# backend (e.g. django.core.mail.backends.smtp.EmailBackend, or
+# django-anymail for SendGrid/Mailgun/SES) via environment variables in
+# production, or reset emails will only appear in the Render logs.
+EMAIL_BACKEND = os.environ.get(
+    "DJANGO_EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend"
+)
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "")
+EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "true").lower() == "true"
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "no-reply@reviewlog.app")

@@ -4,6 +4,7 @@ from ..models import Review
 
 class ReviewSerializer(serializers.ModelSerializer):
     rating = serializers.IntegerField(min_value=1, max_value=5)
+    author = serializers.SerializerMethodField()
 
     class Meta:
         model = Review
@@ -19,4 +20,8 @@ class ReviewSerializer(serializers.ModelSerializer):
             "external_source",
             "image",
             "metadata",
+            "author",
         ]
+
+    def get_author(self, obj):
+        return obj.user.username if obj.user_id else None

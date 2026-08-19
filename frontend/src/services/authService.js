@@ -11,4 +11,19 @@ export const registerUser = async (userData) => {
   return response.data;
 };
 
+export const requestPasswordReset = async (email) => {
+  const response = await api.post("password-reset/request/", { email });
+  return response.data;
+};
+
+export const confirmPasswordReset = async ({ uid, token, password, confirmPassword }) => {
+  const response = await api.post("password-reset/confirm/", {
+    uid,
+    token,
+    new_password: password,
+    confirm_password: confirmPassword,
+  });
+  return response.data;
+};
+
 export { getProfile };

@@ -9,6 +9,8 @@ import Splash from "@/pages/Splash";
 
 const Login = lazy(() => import("@/pages/auth/Login"));
 const Register = lazy(() => import("@/pages/auth/Register"));
+const ForgotPassword = lazy(() => import("@/pages/auth/ForgotPassword"));
+const ResetPassword = lazy(() => import("@/pages/auth/ResetPassword"));
 const Dashboard = lazy(() => import("@/pages/dashboard/Dashboard"));
 const Discover = lazy(() => import("@/pages/discover/Discover"));
 const Profile = lazy(() => import("@/pages/profile/Profile"));
@@ -24,15 +26,7 @@ const Unauthorized = lazy(() => import("@/pages/errors/Unauthorized"));
 const Forbidden = lazy(() => import("@/pages/errors/Forbidden"));
 const ServerError = lazy(() => import("@/pages/errors/ServerError"));
 
-import { useAuth } from "@/hooks/useAuth";
-
 function App() {
-  const { isInitializing } = useAuth();
-
-  if (isInitializing) {
-    return <RouteFallback />;
-  }
-
   return (
     <BrowserRouter>
       <Suspense fallback={<RouteFallback />}>
@@ -42,6 +36,8 @@ function App() {
           <Route element={<AuthLayout />}>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password/:uid/:token" element={<ResetPassword />} />
           </Route>
 
           <Route element={<ProtectedRoute />}>

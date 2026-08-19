@@ -10,6 +10,8 @@ from .views import (
     CatalogItemDeleteView,
     DashboardStatsView,
     CatalogRecommendationView,
+    PasswordResetRequestView,
+    PasswordResetConfirmView,
 )
 
 router = DefaultRouter()
@@ -26,5 +28,7 @@ urlpatterns = [
     path("favorites/<int:pk>/", CatalogItemDeleteView.as_view(), name="favorite-delete"),
     path("recent-items/", CatalogItemListCreateView.as_view(), {"action": "recent"}, name="recent-items"),
     path("dashboard/stats/", DashboardStatsView.as_view(), name="dashboard-stats"),
+    path("password-reset/request/", PasswordResetRequestView.as_view(), name="password-reset-request"),
+    path("password-reset/confirm/", PasswordResetConfirmView.as_view(), name="password-reset-confirm"),
     path("", include(router.urls)),
 ]

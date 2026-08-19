@@ -12,7 +12,7 @@ import HeroBanner from "@/components/common/HeroBanner";
 import Carousel from "@/components/common/Carousel";
 import MediaCard from "@/components/common/MediaCard";
 import ReviewCard from "@/components/common/ReviewCard";
-import { DashboardSkeleton } from "@/components/common/Skeleton";
+import Skeleton from "@/components/common/Skeleton";
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -90,10 +90,6 @@ function Dashboard() {
     [...reviews].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 4), 
   [reviews]);
 
-  if (!profile || loading || catalogLoading) {
-    return <DashboardSkeleton />;
-  }
-
   // Determine the featured item for the HeroBanner
   const featuredItem = catalog.recent.length > 0 
     ? catalog.recent[0] 
@@ -126,7 +122,9 @@ function Dashboard() {
       </div>
 
       {/* Cinematic Hero Spotlight */}
-      {featuredItem ? (
+      {catalogLoading ? (
+        <Skeleton className="min-h-[300px] w-full rounded-2xl" />
+      ) : featuredItem ? (
         <HeroBanner
           item={toMediaItem(featuredItem)}
           type={featuredItem.item_type}
@@ -156,33 +154,43 @@ function Dashboard() {
       )}
 
       {/* Horizontal Carousels */}
-      {catalog.recent.length > 0 && (
-        <Carousel title="Recently Viewed" description="Jump back into items you explored recently.">
-          {catalog.recent.map((item) => (
-            <div key={item.id} className="w-[160px] sm:w-[180px] shrink-0 snap-start">
-              <MediaCard
-                item={toMediaItem(item)}
-                type={item.item_type}
-                onSelect={handleMediaSelect}
-              />
-            </div>
+      {catalogLoading ? (
+        <div className="flex gap-4">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <Skeleton key={index} className="h-[240px] w-[160px] sm:w-[180px] shrink-0" />
           ))}
-        </Carousel>
-      )}
+        </div>
+      ) : (
+        <>
+          {catalog.recent.length > 0 && (
+            <Carousel title="Recently Viewed" description="Jump back into items you explored recently.">
+              {catalog.recent.map((item) => (
+                <div key={item.id} className="w-[160px] sm:w-[180px] shrink-0 snap-start">
+                  <MediaCard
+                    item={toMediaItem(item)}
+                    type={item.item_type}
+                    onSelect={handleMediaSelect}
+                  />
+                </div>
+              ))}
+            </Carousel>
+          )}
 
-      {catalog.favorites.length > 0 && (
-        <Carousel title="Your Favorites Vault" description="Books and movies you've saved for later.">
-          {catalog.favorites.map((item) => (
-            <div key={item.id} className="w-[160px] sm:w-[180px] shrink-0 snap-start">
-              <MediaCard
-                item={toMediaItem(item)}
-                type={item.item_type}
-                isFavorite={true}
-                onSelect={handleMediaSelect}
-              />
-            </div>
-          ))}
-        </Carousel>
+          {catalog.favorites.length > 0 && (
+            <Carousel title="Your Favorites Vault" description="Books and movies you've saved for later.">
+              {catalog.favorites.map((item) => (
+                <div key={item.id} className="w-[160px] sm:w-[180px] shrink-0 snap-start">
+                  <MediaCard
+                    item={toMediaItem(item)}
+                    type={item.item_type}
+                    isFavorite={true}
+                    onSelect={handleMediaSelect}
+                  />
+                </div>
+              ))}
+            </Carousel>
+          )}
+        </>
       )}
 
       {/* Recommended Movies Section */}
@@ -243,7 +251,13 @@ function Dashboard() {
           )}
         </div>
         
-        {recentReviews.length === 0 ? (
+        {loading ? (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <Skeleton key={index} className="h-40 w-full" />
+            ))}
+          </div>
+        ) : recentReviews.length === 0 ? (
           <div className="surface-card p-10 text-center flex flex-col items-center">
             <NotebookText className="h-10 w-10 text-muted-foreground opacity-50 mb-3" />
             <p className="text-foreground font-semibold">No journal entries yet.</p>
@@ -265,22 +279,21 @@ function Dashboard() {
 
       {/* Mini Stats Footer */}
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-border">
-        <div className="surface-card p-5 text-center">
-          <p className="text-3xl font-heading font-bold text-foreground">{stats.totalReviews}</p>
-          <p className="text-xs uppercase tracking-wider text-muted-foreground mt-1 font-bold">Total Reviews</p>
-        </div>
-        <div className="surface-card p-5 text-center">
-          <p className="text-3xl font-heading font-bold text-foreground">{stats.moviesReviewed}</p>
-          <p className="text-xs uppercase tracking-wider text-muted-foreground mt-1 font-bold">Films Logged</p>
-        </div>
-        <div className="surface-card p-5 text-center">
-          <p className="text-3xl font-heading font-bold text-foreground">{stats.booksReviewed}</p>
-          <p className="text-xs uppercase tracking-wider text-muted-foreground mt-1 font-bold">Books Logged</p>
-        </div>
-        <div className="surface-card p-5 text-center">
-          <p className="text-3xl font-heading font-bold text-foreground">{catalog.favorites.length}</p>
-          <p className="text-xs uppercase tracking-wider text-muted-foreground mt-1 font-bold">Favorites</p>
-        </div>
+        {[
+          { label: "Total Reviews", value: stats.totalReviews, ready: !loading },
+          { label: "Films Logged", value: stats.moviesReviewed, ready: !loading },
+          { label: "Books Logged", value: stats.booksReviewed, ready: !loading },
+          { label: "Favorites", value: catalog.favorites.length, ready: !catalogLoading },
+        ].map((stat) => (
+          <div key={stat.label} className="surface-card p-5 text-center">
+            {stat.ready ? (
+              <p className="text-3xl font-heading font-bold text-foreground">{stat.value}</p>
+            ) : (
+              <Skeleton className="h-9 w-12 mx-auto" />
+            )}
+            <p className="text-xs uppercase tracking-wider text-muted-foreground mt-1 font-bold">{stat.label}</p>
+          </div>
+        ))}
       </section>
 
     </div>

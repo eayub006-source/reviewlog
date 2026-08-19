@@ -1,3 +1,4 @@
+from django.db.models import Count, Q
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -59,10 +60,11 @@ class DashboardStatsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        reviews = Review.objects.filter(user=request.user)
-        return Response({
-            "reviews_created": reviews.count(), "books_reviewed": reviews.filter(item_type="book").count(),
-            "movies_reviewed": reviews.filter(item_type="movie").count(),
-            "favorites": CatalogItem.objects.filter(user=request.user, action="favorite").count(),
-            "public_reviews": reviews.filter(is_public=True).count(),
-        })
+        review_stats = Review.objects.filter(user=request.user).aggregate(
+            reviews_created=Count("id"),
+            books_reviewed=Count("id", filter=Q(item_type="book")),
+            movies_reviewed=Count("id", filter=Q(item_type="movie")),
+            public_reviews=Count("id", filter=Q(is_public=True)),
+        )
+        favorites = CatalogItem.objects.filter(user=request.user, action="favorite").count()
+        return Response({**review_stats, "favorites": favorites})

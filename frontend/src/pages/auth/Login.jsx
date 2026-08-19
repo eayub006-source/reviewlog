@@ -34,7 +34,7 @@ function Login() {
   function validate() {
     const nextErrors = {};
     if (!formData.username.trim()) {
-      nextErrors.username = "Username is required.";
+      nextErrors.username = "Username or email is required.";
     }
     if (!formData.password.trim()) {
       nextErrors.password = "Password is required.";
@@ -70,7 +70,7 @@ function Login() {
       navigate("/dashboard", { replace: true });
     } catch (caughtError) {
       const message = caughtError.response?.status === 401
-        ? "Invalid username or password."
+        ? "Invalid username/email or password."
         : getFriendlyApiError(caughtError);
 
       setError(message);
@@ -97,14 +97,14 @@ function Login() {
       <form className="space-y-6" onSubmit={handleSubmit} noValidate>
         <div className="space-y-2">
           <label htmlFor="username" className="block text-sm font-semibold text-foreground">
-            Username
+            Username or Email
           </label>
           <div className="relative">
             <Mail className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground opacity-70" />
             <input
               id="username"
               name="username"
-              placeholder="Enter your username"
+              placeholder="Enter your username or email"
               autoComplete="username"
               className={`field field-with-icon pl-11 ${errors.username ? "border-destructive focus:border-destructive focus:ring-destructive/20" : ""}`}
               value={formData.username}
@@ -116,9 +116,14 @@ function Login() {
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="password" className="block text-sm font-semibold text-foreground">
-            Password
-          </label>
+          <div className="flex items-center justify-between">
+            <label htmlFor="password" className="block text-sm font-semibold text-foreground">
+              Password
+            </label>
+            <Link to="/forgot-password" className="text-sm font-semibold text-secondary hover:text-[#c96c53] transition-colors">
+              Forgot password?
+            </Link>
+          </div>
           <div className="relative">
             <KeyRound className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground opacity-70" />
             <input

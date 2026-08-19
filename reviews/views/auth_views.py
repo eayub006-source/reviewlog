@@ -86,24 +86,35 @@ class PasswordResetRequestView(APIView):
             uid = urlsafe_base64_encode(force_bytes(user.pk))
             token = _password_reset_token_generator.make_token(user)
             reset_url = f"{settings.FRONTEND_URL}/reset-password/{uid}/{token}"
+            uses_smtp = settings.EMAIL_BACKEND == "django.core.mail.backends.smtp.EmailBackend"
 
-            try:
-                send_mail(
-                    subject="Reset your ReviewLog password",
-                    message=(
-                        "We received a request to reset your ReviewLog password.\n\n"
-                        f"Reset it here: {reset_url}\n\n"
-                        "If you did not request this, you can safely ignore this email."
-                    ),
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=[email],
-                    fail_silently=False,
+            if uses_smtp and not settings.EMAIL_HOST:
+                # Fail loudly in the logs rather than silently pretending the
+                # email went out. Never include the token/reset_url here.
+                logger.error(
+                    "Password reset email NOT sent: SMTP backend is selected but "
+                    "EMAIL_HOST is not configured. Set EMAIL_HOST, EMAIL_PORT, "
+                    "EMAIL_HOST_USER, EMAIL_HOST_PASSWORD, EMAIL_USE_TLS, and "
+                    "DEFAULT_FROM_EMAIL in the environment."
                 )
-            except Exception:
-                # Never leak delivery failures to the client (that would be an
-                # enumeration signal); log server-side so misconfiguration is
-                # still visible in Render's logs.
-                logger.exception("Failed to send password reset email")
+            else:
+                try:
+                    send_mail(
+                        subject="Reset your ReviewLog password",
+                        message=(
+                            "We received a request to reset your ReviewLog password.\n\n"
+                            f"Reset it here: {reset_url}\n\n"
+                            "If you did not request this, you can safely ignore this email."
+                        ),
+                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        recipient_list=[email],
+                        fail_silently=False,
+                    )
+                except Exception:
+                    # Never leak delivery failures to the client (that would be an
+                    # enumeration signal); log server-side so misconfiguration is
+                    # still visible in Render's logs. Never log the token/reset_url.
+                    logger.exception("Failed to send password reset email (SMTP error)")
 
         return Response(
             {"detail": "If an account with that email exists, a password reset link has been sent."},

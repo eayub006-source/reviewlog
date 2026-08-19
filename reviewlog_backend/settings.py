@@ -224,13 +224,17 @@ SECURE_HSTS_PRELOAD = os.environ.get("DJANGO_SECURE_HSTS_PRELOAD", "false").lowe
 # that are sent in emails and must point at the SPA, not the API.
 FRONTEND_URL = os.environ.get("FRONTEND_URL", "https://reviewlog.vercel.app")
 
-# Email delivery for password resets etc. Defaults to printing to the
-# console (safe for local dev). Set EMAIL_BACKEND to a real SMTP/provider
-# backend (e.g. django.core.mail.backends.smtp.EmailBackend, or
-# django-anymail for SendGrid/Mailgun/SES) via environment variables in
-# production, or reset emails will only appear in the Render logs.
+# Email delivery for password resets etc.
+#
+# The backend is chosen from DEBUG, not hardcoded: local dev defaults to
+# printing emails to the console (zero setup needed), while anything running
+# with DEBUG off defaults to real SMTP. Production must never silently fall
+# back to the console backend just because DJANGO_EMAIL_BACKEND wasn't set.
 EMAIL_BACKEND = os.environ.get(
-    "DJANGO_EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend"
+    "DJANGO_EMAIL_BACKEND",
+    "django.core.mail.backends.console.EmailBackend"
+    if DEBUG
+    else "django.core.mail.backends.smtp.EmailBackend",
 )
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "")
 EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))

@@ -18,6 +18,11 @@ class ResendApiEmailBackend(BaseEmailBackend):
     """Sends mail via Resend's HTTPS API instead of raw SMTP."""
 
     API_URL = "https://api.resend.com/emails"
+    # Resend sits behind Cloudflare, whose bot-detection (Browser Integrity
+    # Check) blocks requests with no User-Agent or a known scripting-library
+    # default (e.g. urllib's "Python-urllib/x.y") with a 403 "error code:
+    # 1010". An explicit, identifiable User-Agent avoids that entirely.
+    USER_AGENT = "ReviewLog/1.0 (+https://reviewlog.vercel.app)"
 
     def send_messages(self, email_messages):
         if not email_messages:
@@ -46,6 +51,7 @@ class ResendApiEmailBackend(BaseEmailBackend):
                 headers={
                     "Authorization": f"Bearer {api_key}",
                     "Content-Type": "application/json",
+                    "User-Agent": self.USER_AGENT,
                 },
             )
             try:

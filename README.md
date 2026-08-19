@@ -181,7 +181,7 @@ Render's free tier blocks all outbound traffic to SMTP ports (25, 465, 587) as o
 ### Production setup: Resend (current default)
 
 1. Create a free account at resend.com and generate an API key.
-2. Without a verified domain, Resend restricts you to sending from `onboarding@resend.dev` and only to the email address your Resend account is registered with. To send password resets to any user's real address, add and verify a domain you own in Resend's dashboard (DNS records), then send from an address on that domain.
+2. Without a verified domain, Resend restricts you to sending from `onboarding@resend.dev` and only to the email address your Resend account is registered with. `DEFAULT_FROM_EMAIL` **must** be `onboarding@resend.dev` (or an address on a domain you've verified in Resend) — an arbitrary address like a personal Gmail address will be rejected by Resend, since ReviewLog doesn't control that domain. To send password resets to any user's real address, add and verify a domain you own in Resend's dashboard (DNS records), then send from an address on that domain.
 3. In Render, open the backend service → Environment, and set:
    - `RESEND_API_KEY=<your-resend-api-key>`
    - `DEFAULT_FROM_EMAIL=<your-verified-sending-address>` (e.g. `onboarding@resend.dev` for testing, or `no-reply@yourdomain.com` once a domain is verified)
@@ -221,7 +221,9 @@ To generate one:
 
 1. Check spam/junk first — this is the most common cause.
 2. Check the Render service's Logs tab for a line starting with "Password reset email NOT sent" (configuration missing) or "Failed to send password reset email" (a send was attempted and failed, with the exception type and reason).
-3. If using Resend, confirm `RESEND_API_KEY` is set in Render and that `DEFAULT_FROM_EMAIL` is either `onboarding@resend.dev` or an address on a domain you've verified in Resend.
+3. If using Resend, confirm `RESEND_API_KEY` is set in Render and that `DEFAULT_FROM_EMAIL` is either `onboarding@resend.dev` or an address on a domain you've verified in Resend — a personal email address on a domain Resend doesn't know about will be rejected regardless of the API key.
+   - A `403` error containing `"error code: 1010"` is not a Resend authentication failure — it's Cloudflare's bot-detection blocking the request before it reaches Resend at all, usually because of a missing or generic scripting-library `User-Agent` header. The backend sends an explicit `ReviewLog/1.0` User-Agent specifically to avoid this; if you see 1010 again, something in front of the request (a proxy, a different HTTP client) is stripping or overriding that header.
+   - A `401` with `"API key is invalid"` means the request reached Resend correctly and it's a real, fixable credentials issue — double-check `RESEND_API_KEY` in Render.
 4. If using SMTP, confirm `EMAIL_HOST` is exactly `smtp.gmail.com`, `EMAIL_PORT` is `587`, and `EMAIL_USE_TLS` is `true`.
 5. If using SMTP, confirm `EMAIL_HOST_PASSWORD` is a Gmail App Password (16 characters, generated as above) and not the account's regular password — Gmail rejects the regular password for SMTP login when 2-Step Verification is enabled.
 6. If using SMTP on Render's free tier: this will never work regardless of credentials, since outbound SMTP ports are blocked at the network level. Switch to the Resend backend, or upgrade to a paid Render plan.

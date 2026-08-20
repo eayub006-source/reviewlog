@@ -113,20 +113,20 @@ function Navbar({ currentUser, onLogout }) {
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur-md">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between gap-4">
-          
+        <div className="flex h-16 items-center justify-between gap-2 sm:gap-4">
+
           <div className="flex items-center gap-8 shrink-0">
             <button
               onClick={() => navigate("/")}
               className="flex items-center gap-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg"
               aria-label="ReviewLog Home"
             >
-              <span className="font-heading font-bold text-2xl tracking-tight text-primary">
+              <span className="font-heading font-bold text-xl sm:text-2xl tracking-tight text-primary">
                 ReviewLog
               </span>
             </button>
 
-            <nav className="hidden lg:flex items-center gap-2" aria-label="Main Navigation">
+            <nav className="hidden xl:flex items-center gap-2" aria-label="Main Navigation">
               {navLinks.map((link) => {
                 const active = isActive(link.to);
                 return (
@@ -148,7 +148,7 @@ function Navbar({ currentUser, onLogout }) {
             </nav>
           </div>
 
-          <div ref={searchRef} className="flex-1 max-w-sm relative">
+          <div ref={searchRef} className="flex-1 min-w-0 max-w-sm relative">
             {canSearch ? (
               <SearchBar value={searchValue} onChange={handleSearchChange} placeholder="Search reviews" />
             ) : (
@@ -212,7 +212,7 @@ function Navbar({ currentUser, onLogout }) {
             )}
           </div>
 
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <button
               onClick={() => navigate("/reviews/new")}
               className="btn btn-secondary hidden sm:inline-flex h-9 py-0 px-4"
@@ -223,7 +223,7 @@ function Navbar({ currentUser, onLogout }) {
             </button>
 
             <button
-              className="btn btn-ghost h-9 w-9 p-0 lg:hidden flex items-center justify-center"
+              className="btn btn-ghost h-9 w-9 p-0 shrink-0 xl:hidden flex items-center justify-center"
               aria-label="Open navigation menu"
               aria-expanded={mobileMenuOpen}
               onClick={() => setMobileMenuOpen(true)}
@@ -256,7 +256,7 @@ function Navbar({ currentUser, onLogout }) {
 
             <button
               onClick={() => navigate("/profile")}
-              className="sm:hidden flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-primary font-bold text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="sm:hidden shrink-0 flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-primary font-bold text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-label="View Profile"
             >
               {currentUser?.avatar_data ? (

@@ -29,7 +29,7 @@ const HeroBanner = memo(function HeroBanner({
       />
 
       {/* Main Content */}
-      <div className="relative z-10 flex-1 p-6 md:p-10 flex flex-col justify-center">
+      <div className="relative z-10 flex-1 p-5 sm:p-6 md:p-10 flex flex-col justify-center">
         <div className="mb-4">
           <span className="pill bg-primary/10 text-primary border-primary/20 mb-3 inline-block">
             Featured {type === "movie" ? "Film" : "Book"}
@@ -64,8 +64,8 @@ const HeroBanner = memo(function HeroBanner({
         </div>
       </div>
 
-      {/* Poster Art (Right Side on Desktop, Top/Hidden on Mobile) */}
-      <div className="relative z-10 w-full md:w-[30%] shrink-0 aspect-[2/3] md:aspect-auto hidden md:block border-l border-border bg-[#dcd7d0]">
+      {/* Poster Art (Right rail on desktop, stacked banner below content on mobile) */}
+      <div className="relative z-10 w-full md:w-[30%] shrink-0 aspect-[16/9] md:aspect-auto border-t md:border-t-0 md:border-l border-border bg-[#dcd7d0]">
         {image ? (
           <img
             src={image}

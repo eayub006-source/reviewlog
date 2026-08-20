@@ -1,4 +1,4 @@
-import { Menu, LogOut, UserRound, Plus, Heart, Settings, NotebookText, Globe2, BookOpen, Film, Compass, X } from "lucide-react";
+import { Menu, LogOut, UserRound, Plus, Heart, Settings, NotebookText, Globe2, BookOpen, Film, Compass, X, Search } from "lucide-react";
 import { useMemo, useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
@@ -19,6 +19,7 @@ function Navbar({ currentUser, onLogout }) {
   const [suggestions, setSuggestions] = useState(() => getSearchHistory());
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOverlayOpen, setSearchOverlayOpen] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const mobileMenuRef = useRef(null);
   const searchRef = useRef(null);
 
@@ -44,6 +45,7 @@ function Navbar({ currentUser, onLogout }) {
     saveSearchHistory(globalQuery);
     setSuggestions(getSearchHistory());
     setSearchOverlayOpen(false);
+    setMobileSearchOpen(false);
     navigate(`/books?q=${encodeURIComponent(globalQuery.trim())}`);
   }
 
@@ -52,6 +54,7 @@ function Navbar({ currentUser, onLogout }) {
       if (event.key === "Escape") {
         setMobileMenuOpen(false);
         setSearchOverlayOpen(false);
+        setMobileSearchOpen(false);
       }
     }
     document.addEventListener("keydown", handleKeyDown);
@@ -148,7 +151,7 @@ function Navbar({ currentUser, onLogout }) {
             </nav>
           </div>
 
-          <div ref={searchRef} className="flex-1 min-w-0 max-w-sm relative">
+          <div ref={searchRef} className="hidden sm:block flex-1 min-w-0 max-w-sm relative">
             {canSearch ? (
               <SearchBar value={searchValue} onChange={handleSearchChange} placeholder="Search reviews" />
             ) : (
@@ -214,6 +217,19 @@ function Navbar({ currentUser, onLogout }) {
 
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <button
+              type="button"
+              className="btn btn-ghost h-9 w-9 p-0 shrink-0 sm:hidden flex items-center justify-center"
+              aria-label={mobileSearchOpen ? "Close search" : "Open search"}
+              aria-expanded={mobileSearchOpen}
+              onClick={() => {
+                setMobileMenuOpen(false);
+                setMobileSearchOpen((open) => !open);
+              }}
+            >
+              <Search className="h-5 w-5" />
+            </button>
+
+            <button
               onClick={() => navigate("/reviews/new")}
               className="btn btn-secondary hidden sm:inline-flex h-9 py-0 px-4"
               aria-label="Add Review"
@@ -223,10 +239,21 @@ function Navbar({ currentUser, onLogout }) {
             </button>
 
             <button
+              onClick={() => navigate("/reviews/new")}
+              className="btn btn-secondary h-9 w-9 p-0 shrink-0 sm:hidden flex items-center justify-center"
+              aria-label="Add Review"
+            >
+              <Plus className="h-4 w-4 stroke-[3px]" />
+            </button>
+
+            <button
               className="btn btn-ghost h-9 w-9 p-0 shrink-0 xl:hidden flex items-center justify-center"
               aria-label="Open navigation menu"
               aria-expanded={mobileMenuOpen}
-              onClick={() => setMobileMenuOpen(true)}
+              onClick={() => {
+                setMobileSearchOpen(false);
+                setMobileMenuOpen(true);
+              }}
             >
               <Menu className="h-5 w-5" />
             </button>
@@ -253,21 +280,91 @@ function Navbar({ currentUser, onLogout }) {
                 ]}
               />
             </div>
-
-            <button
-              onClick={() => navigate("/profile")}
-              className="sm:hidden shrink-0 flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-primary font-bold text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              aria-label="View Profile"
-            >
-              {currentUser?.avatar_data ? (
-                <img src={currentUser.avatar_data} alt={currentUser.username} className="h-full w-full object-cover" />
-              ) : (
-                <span>{(currentUser?.username ?? "U").slice(0, 1).toUpperCase()}</span>
-              )}
-            </button>
           </div>
 
         </div>
+
+        {mobileSearchOpen && (
+          <div className="sm:hidden border-t border-border pt-3 pb-4" role="search" aria-label="Mobile search">
+            <div className="flex items-center gap-2">
+              <div className="flex-1 min-w-0 relative">
+                {canSearch ? (
+                  <SearchBar
+                    value={searchValue}
+                    onChange={handleSearchChange}
+                    placeholder="Search reviews"
+                    ariaLabel="Search reviews"
+                    autoFocus
+                  />
+                ) : (
+                  <SearchBar
+                    value={globalQuery}
+                    onChange={(event) => setGlobalQuery(event.target.value)}
+                    onKeyDown={submitGlobalSearch}
+                    placeholder="Search catalog"
+                    ariaLabel="Search movies or books"
+                    autoFocus
+                  />
+                )}
+              </div>
+              <button
+                type="button"
+                className="btn btn-ghost h-11 w-11 p-0 shrink-0 flex items-center justify-center"
+                aria-label="Close search"
+                onClick={() => setMobileSearchOpen(false)}
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {!canSearch && globalQuery && (
+              <div className="mt-3 flex flex-col gap-2 rounded-xl border border-border bg-card p-3 shadow-sm">
+                <p className="caption-text px-1 mb-1 font-semibold text-primary">Quick Search</p>
+                <div className="flex gap-2">
+                  <button
+                    className="btn btn-primary flex-1 h-10 text-sm font-medium"
+                    onClick={() => {
+                      saveSearchHistory(globalQuery);
+                      setMobileSearchOpen(false);
+                      navigate(`/books?q=${encodeURIComponent(globalQuery)}`);
+                    }}
+                  >
+                    Search Books
+                  </button>
+                  <button
+                    className="btn btn-outline flex-1 h-10 text-sm font-medium"
+                    onClick={() => {
+                      saveSearchHistory(globalQuery);
+                      setMobileSearchOpen(false);
+                      navigate(`/movies?q=${encodeURIComponent(globalQuery)}`);
+                    }}
+                  >
+                    Search Movies
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {!canSearch && !globalQuery && suggestions.length > 0 && (
+              <div className="mt-3 max-h-[50vh] overflow-y-auto rounded-xl border border-border bg-card p-2 shadow-sm">
+                <p className="caption-text px-2 py-1.5 mb-1 font-semibold text-primary">Recent Searches</p>
+                {suggestions.slice(0, 6).map((term) => (
+                  <button
+                    key={term}
+                    className="block w-full rounded-md px-3 py-2.5 text-left text-sm text-foreground hover:bg-muted font-medium"
+                    onClick={() => {
+                      setGlobalQuery(term);
+                      setMobileSearchOpen(false);
+                      navigate(`/books?q=${encodeURIComponent(term)}`);
+                    }}
+                  >
+                    {term}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {mobileMenuOpen && (

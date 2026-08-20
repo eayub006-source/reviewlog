@@ -64,7 +64,7 @@ const MediaCard = memo(function MediaCard({
 
         {/* Action Button Overlays (fade-in on hover) */}
         {showActions && (
-          <div className="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4 gap-2">
+          <div className="absolute inset-0 bg-slate-950/60 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3 sm:p-4 gap-2">
             {onSelect && (
               <Button
                 size="sm"

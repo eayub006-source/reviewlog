@@ -116,7 +116,7 @@ function Navbar({ currentUser, onLogout }) {
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur-md">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between gap-2 sm:gap-4">
+        <div className="flex h-14 sm:h-16 items-center justify-between gap-2 sm:gap-4">
 
           <div className="flex items-center gap-8 shrink-0">
             <button
@@ -218,7 +218,7 @@ function Navbar({ currentUser, onLogout }) {
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <button
               type="button"
-              className="btn btn-ghost h-9 w-9 p-0 shrink-0 sm:hidden flex items-center justify-center"
+              className="btn btn-ghost h-9 w-9 p-0! shrink-0 sm:hidden flex items-center justify-center"
               aria-label={mobileSearchOpen ? "Close search" : "Open search"}
               aria-expanded={mobileSearchOpen}
               onClick={() => {
@@ -231,23 +231,15 @@ function Navbar({ currentUser, onLogout }) {
 
             <button
               onClick={() => navigate("/reviews/new")}
-              className="btn btn-secondary hidden sm:inline-flex h-9 py-0 px-4"
+              className="btn btn-secondary h-9 px-3! sm:px-4! shrink-0"
               aria-label="Add Review"
             >
-              <Plus className="mr-1 h-4 w-4 stroke-[3px]" />
-              Add Review
+              <Plus className="h-4 w-4 stroke-[3px] sm:mr-1" />
+              <span className="hidden sm:inline">Add Review</span>
             </button>
 
             <button
-              onClick={() => navigate("/reviews/new")}
-              className="btn btn-secondary h-9 w-9 p-0 shrink-0 sm:hidden flex items-center justify-center"
-              aria-label="Add Review"
-            >
-              <Plus className="h-4 w-4 stroke-[3px]" />
-            </button>
-
-            <button
-              className="btn btn-ghost h-9 w-9 p-0 shrink-0 xl:hidden flex items-center justify-center"
+              className="btn btn-ghost h-9 w-9 p-0! shrink-0 xl:hidden flex items-center justify-center"
               aria-label="Open navigation menu"
               aria-expanded={mobileMenuOpen}
               onClick={() => {
@@ -309,7 +301,7 @@ function Navbar({ currentUser, onLogout }) {
               </div>
               <button
                 type="button"
-                className="btn btn-ghost h-11 w-11 p-0 shrink-0 flex items-center justify-center"
+                className="btn btn-ghost h-11 w-11 p-0! shrink-0 flex items-center justify-center"
                 aria-label="Close search"
                 onClick={() => setMobileSearchOpen(false)}
               >
@@ -375,12 +367,12 @@ function Navbar({ currentUser, onLogout }) {
           aria-modal="true"
           aria-label="Mobile Navigation"
         >
-          <div className="flex h-16 items-center justify-between px-6 border-b border-border">
+          <div className="flex h-14 sm:h-16 items-center justify-between px-6 border-b border-border">
             <span className="font-heading font-bold text-2xl text-primary">
               ReviewLog
             </span>
             <button
-              className="btn btn-ghost h-9 w-9 p-0 flex items-center justify-center"
+              className="btn btn-ghost h-9 w-9 p-0! flex items-center justify-center"
               aria-label="Close navigation menu"
               onClick={() => setMobileMenuOpen(false)}
             >

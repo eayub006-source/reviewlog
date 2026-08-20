@@ -109,14 +109,14 @@ function Dashboard() {
   });
 
   return (
-    <div className="space-y-12 pb-10">
-      
+    <div className="space-y-8 sm:space-y-12 pb-10">
+
       {/* Dynamic Greeting */}
       <div>
         <h1 className="page-title mb-1">
           Good to see you, {profile?.username ?? "Traveller"}.
         </h1>
-        <p className="body-text text-base sm:text-lg">
+        <p className="body-text max-w-2xl text-base sm:text-lg">
           Your private library is waiting. Discover new stories and log your thoughts.
         </p>
       </div>
@@ -140,13 +140,13 @@ function Dashboard() {
           )}`)}
         />
       ) : (
-        <div className="surface-card p-6 sm:p-12 text-center rounded-2xl bg-[#e8e3dc] flex flex-col items-center justify-center min-h-[300px]">
-          <Compass className="h-12 w-12 text-primary mb-4 opacity-50" />
-          <h2 className="font-heading text-2xl font-bold text-foreground mb-2">Your library is empty</h2>
-          <p className="body-text max-w-md">
+        <div className="surface-card p-6 sm:p-12 text-center rounded-2xl bg-[#e8e3dc] flex flex-col items-center justify-center min-h-[220px] sm:min-h-[300px]">
+          <Compass className="h-10 w-10 sm:h-12 sm:w-12 text-primary mb-3 sm:mb-4 opacity-50" />
+          <h2 className="font-heading text-xl sm:text-2xl font-bold text-foreground mb-2">Your library is empty</h2>
+          <p className="body-text max-w-md text-sm sm:text-base">
             Start searching for books and movies to populate your featured dashboard spotlight.
           </p>
-          <div className="flex flex-wrap justify-center gap-3 sm:gap-4 mt-6">
+          <div className="flex flex-wrap justify-center gap-3 sm:gap-4 mt-5 sm:mt-6">
             <button className="btn btn-primary" onClick={() => navigate("/movies")}>Find Movies</button>
             <button className="btn btn-outline" onClick={() => navigate("/books")}>Find Books</button>
           </div>

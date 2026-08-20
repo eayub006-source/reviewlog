@@ -104,7 +104,7 @@
 
 @layer utilities {
   .page-title {
-    @apply text-3xl md:text-4xl font-heading font-bold text-foreground mb-4;
+    @apply text-2xl sm:text-3xl md:text-4xl font-heading font-bold text-foreground mb-4;
   }
 
   .section-title {

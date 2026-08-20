@@ -15,15 +15,15 @@ const Carousel = memo(function Carousel({ children, title, description }) {
   return (
     <section className="space-y-4">
       {/* Title & Navigation Header */}
-      <div className="flex items-end justify-between">
-        <div>
-          {title && <h2 className="text-xl font-bold tracking-tight text-slate-100">{title}</h2>}
-          {description && <p className="text-sm text-slate-400 mt-1">{description}</p>}
+      <div className="flex items-end justify-between gap-3">
+        <div className="min-w-0">
+          {title && <h2 className="text-lg sm:text-xl font-bold tracking-tight text-foreground">{title}</h2>}
+          {description && <p className="text-sm text-muted-foreground mt-1">{description}</p>}
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
           <button
             type="button"
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/5 bg-white/5 text-slate-300 transition-all hover:bg-white/10 hover:text-slate-100 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/20 cursor-pointer"
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground transition-all hover:bg-muted hover:text-foreground active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
             aria-label="Scroll left"
             onClick={() => scroll("left")}
           >
@@ -31,7 +31,7 @@ const Carousel = memo(function Carousel({ children, title, description }) {
           </button>
           <button
             type="button"
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/5 bg-white/5 text-slate-300 transition-all hover:bg-white/10 hover:text-slate-100 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/20 cursor-pointer"
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground transition-all hover:bg-muted hover:text-foreground active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
             aria-label="Scroll right"
             onClick={() => scroll("right")}
           >

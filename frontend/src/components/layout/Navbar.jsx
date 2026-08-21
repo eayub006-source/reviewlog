@@ -230,7 +230,7 @@ function Navbar({ currentUser, onLogout }) {
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <button
               type="button"
-              className="btn btn-ghost h-9 w-9 p-0! shrink-0 sm:hidden flex items-center justify-center"
+              className="btn btn-ghost h-9 w-9 p-0! shrink-0 sm:hidden! flex items-center justify-center"
               aria-label={mobileSearchOpen ? "Close search" : "Open search"}
               aria-expanded={mobileSearchOpen}
               onClick={() => {

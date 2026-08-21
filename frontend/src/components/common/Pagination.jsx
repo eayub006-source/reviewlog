@@ -8,7 +8,7 @@ function Pagination({ page, totalPages, onPageChange }) {
   }
 
   return (
-    <div className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 shadow-sm">
+    <div className="flex flex-wrap items-center justify-center sm:justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 shadow-sm">
       <p>
         Page {page} of {totalPages}
       </p>

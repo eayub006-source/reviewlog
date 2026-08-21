@@ -51,6 +51,15 @@ API Entry Point: https://reviewlog.onrender.com/api/
 12. Account Settings: Persistent user preferences including language, region, and content filters.
 13. Dashboard: A personalized home hub featuring a hero spotlight, recent activity carousels, and quick stats.
 
+## Responsive / Mobile Support
+
+ReviewLog's UI is responsive across phone, tablet, and desktop widths using Tailwind's breakpoint system (no separate mobile UI or extra dependency).
+
+- **Mobile navigation**: below the `xl` breakpoint (1280px), the desktop nav row is replaced by a hamburger button in the header. It opens a compact dropdown menu (Dashboard, My Reviews, Favorites, View profile, Settings, Logout) anchored below the header, closable via a second tap, an outside click, or Escape.
+- **Mobile search**: on phone widths (below `sm`, 640px), the inline search field is replaced by a search icon that opens a full-width search panel below the header, with the same catalog quick-search and recent-search behavior as desktop.
+- **Layout**: cards, grids, and carousels reflow at `sm`/`md`/`lg`/`xl` breakpoints (e.g. review/catalog grids go 1 → 2 → 4+ columns; the Featured item banner stacks vertically on phones instead of side-by-side); headings and section spacing scale down on small screens; horizontal padding stays a comfortable 16px+ at all widths.
+- **Testing**: use Chrome DevTools → Toggle device toolbar (Ctrl+Shift+M / Cmd+Shift+M) → set a custom width or device preset, and check at minimum 320px, 375px, 390px, 768px, and 1280px+.
+
 ## Architecture
 
 ### Frontend Architecture

@@ -160,11 +160,11 @@ function Settings() {
         </section>
 
         {/* Actions */}
-        <div className="flex justify-end gap-3 pt-2">
-          <button type="button" onClick={handleLogout} className="btn btn-outline text-destructive hover:bg-destructive/10 border-destructive/20 h-10 px-6 mr-auto">
+        <div className="flex flex-col sm:flex-row justify-end gap-3 pt-2">
+          <button type="button" onClick={handleLogout} className="btn btn-outline text-destructive hover:bg-destructive/10 border-destructive/20 h-10 px-6 sm:mr-auto order-2 sm:order-1">
             <LogOut className="h-4 w-4 mr-1.5" /> Logout
           </button>
-          <button type="submit" disabled={isSaving} className="btn btn-primary h-10 px-8">
+          <button type="submit" disabled={isSaving} className="btn btn-primary h-10 px-8 order-1 sm:order-2">
             {isSaving ? <LoaderCircle className="h-4 w-4 animate-spin mr-1.5" /> : <Save className="h-4 w-4 mr-1.5" />}
             {isSaving ? "Saving..." : "Save Changes"}
           </button>

@@ -66,6 +66,9 @@ function Navbar({ currentUser, onLogout }) {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
         setSearchOverlayOpen(false);
       }
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target)) {
+        setMobileMenuOpen(false);
+      }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -111,6 +114,15 @@ function Navbar({ currentUser, onLogout }) {
     { to: "/books", label: "Books", icon: BookOpen },
     { to: "/reviews", label: "My Reviews", icon: NotebookText },
     { to: "/public-reviews", label: "Public Reviews", icon: Globe2 },
+  ];
+
+  const accountMenuItems = [
+    { label: "Dashboard", icon: Compass, onSelect: () => navigate("/dashboard") },
+    { label: "My Reviews", icon: NotebookText, onSelect: () => navigate("/reviews") },
+    { label: "Favorites", icon: Heart, onSelect: () => navigate("/favorites") },
+    { label: "View profile", icon: UserRound, onSelect: () => navigate("/profile") },
+    { label: "Settings", icon: Settings, onSelect: () => navigate("/settings") },
+    { label: "Logout", icon: LogOut, tone: "danger", onSelect: onLogout },
   ];
 
   return (
@@ -238,17 +250,50 @@ function Navbar({ currentUser, onLogout }) {
               <span className="hidden sm:inline">Add Review</span>
             </button>
 
-            <button
-              className="btn btn-ghost h-9 w-9 p-0! shrink-0 xl:hidden flex items-center justify-center"
-              aria-label="Open navigation menu"
-              aria-expanded={mobileMenuOpen}
-              onClick={() => {
-                setMobileSearchOpen(false);
-                setMobileMenuOpen(true);
-              }}
-            >
-              <Menu className="h-5 w-5" />
-            </button>
+            <div ref={mobileMenuRef} className="relative shrink-0 xl:hidden">
+              <button
+                type="button"
+                className="btn btn-ghost h-9 w-9 p-0! flex items-center justify-center"
+                aria-label="Open navigation menu"
+                aria-haspopup="menu"
+                aria-expanded={mobileMenuOpen}
+                onClick={() => {
+                  setMobileSearchOpen(false);
+                  setMobileMenuOpen((open) => !open);
+                }}
+              >
+                <Menu className="h-5 w-5" />
+              </button>
+
+              {mobileMenuOpen && (
+                <div
+                  role="menu"
+                  aria-label="Account menu"
+                  className="absolute right-0 top-[calc(100%+0.5rem)] z-50 min-w-[210px] rounded-3xl border border-slate-200 bg-white p-2 shadow-2xl"
+                >
+                  {accountMenuItems.map((item) => (
+                    <button
+                      key={item.label}
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        item.onSelect?.();
+                      }}
+                      className={cn(
+                        "flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-sm transition-colors",
+                        item.tone === "danger"
+                          ? "text-rose-600 hover:bg-rose-50"
+                          : "text-slate-700 hover:bg-slate-100",
+                      )}
+                    >
+                      <item.icon className="h-4 w-4" />
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
 
             <div className="hidden sm:block">
               <DropdownMenu
@@ -262,14 +307,7 @@ function Navbar({ currentUser, onLogout }) {
                     </span>
                   </span>
                 }
-                items={[
-                  { label: "Dashboard", icon: Compass, onSelect: () => navigate("/dashboard") },
-                  { label: "My Reviews", icon: NotebookText, onSelect: () => navigate("/reviews") },
-                  { label: "Favorites", icon: Heart, onSelect: () => navigate("/favorites") },
-                  { label: "View profile", icon: UserRound, onSelect: () => navigate("/profile") },
-                  { label: "Settings", icon: Settings, onSelect: () => navigate("/settings") },
-                  { label: "Logout", icon: LogOut, tone: "danger", onSelect: onLogout },
-                ]}
+                items={accountMenuItems}
               />
             </div>
           </div>
@@ -358,117 +396,6 @@ function Navbar({ currentUser, onLogout }) {
           </div>
         )}
       </div>
-
-      {mobileMenuOpen && (
-        <div
-          ref={mobileMenuRef}
-          className="fixed inset-0 z-50 flex flex-col bg-background/95 backdrop-blur-xl animate-fade-in"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Mobile Navigation"
-        >
-          <div className="flex h-14 sm:h-16 items-center justify-between px-6 border-b border-border">
-            <span className="font-heading font-bold text-2xl text-primary">
-              ReviewLog
-            </span>
-            <button
-              className="btn btn-ghost h-9 w-9 p-0! flex items-center justify-center"
-              aria-label="Close navigation menu"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <X className="h-5 w-5" />
-            </button>
-          </div>
-
-          <div className="flex-1 overflow-y-auto px-6 py-8">
-            <p className="caption-text mb-3">Discovery</p>
-            <nav className="flex flex-col gap-2 mb-8">
-              {navLinks.map((link) => {
-                const active = isActive(link.to);
-                return (
-                  <button
-                    key={link.to}
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      navigate(link.to);
-                    }}
-                    className={cn(
-                      "flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold transition-colors",
-                      active
-                        ? "bg-primary text-primary-foreground"
-                        : "text-foreground hover:bg-muted"
-                    )}
-                  >
-                    <link.icon className="h-5 w-5" />
-                    {link.label}
-                  </button>
-                );
-              })}
-            </nav>
-
-            <p className="caption-text mb-3">Personal Library</p>
-            <nav className="flex flex-col gap-2">
-              {[
-                { to: "/favorites", label: "My Favorites", icon: Heart },
-                { to: "/profile", label: "View Profile", icon: UserRound },
-                { to: "/settings", label: "Settings", icon: Settings },
-              ].map((link) => {
-                const active = isActive(link.to);
-                return (
-                  <button
-                    key={link.to}
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      navigate(link.to);
-                    }}
-                    className={cn(
-                      "flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold transition-colors",
-                      active
-                        ? "bg-primary text-primary-foreground"
-                        : "text-foreground hover:bg-muted"
-                    )}
-                  >
-                    <link.icon className="h-5 w-5" />
-                    {link.label}
-                  </button>
-                );
-              })}
-            </nav>
-          </div>
-
-          <div className="border-t border-border p-6 bg-muted/30 flex flex-col gap-3">
-            <div className="flex items-center gap-3 mb-2">
-              <Avatar name={currentUser?.username ?? "Account"} src={currentUser?.avatar_data} size="md" className="bg-primary text-primary-foreground font-bold" />
-              <div>
-                <p className="text-sm font-bold text-foreground">{currentUser?.username ?? "Account"}</p>
-                <p className="text-xs text-muted-foreground">{currentUser?.email ?? "User Session"}</p>
-              </div>
-            </div>
-
-            <button
-              onClick={() => {
-                setMobileMenuOpen(false);
-                navigate("/reviews/new");
-              }}
-              className="btn btn-secondary w-full"
-            >
-              <Plus className="mr-1 h-4 w-4 stroke-[3px]" />
-              Add Review
-            </button>
-
-            <button
-              className="btn btn-outline w-full text-destructive border-destructive/30 hover:bg-destructive/10"
-              onClick={() => {
-                setMobileMenuOpen(false);
-                onLogout();
-              }}
-            >
-              <LogOut className="mr-1.5 h-4 w-4" />
-              Logout
-            </button>
-          </div>
-        </div>
-      )}
     </header>
   );
 }
